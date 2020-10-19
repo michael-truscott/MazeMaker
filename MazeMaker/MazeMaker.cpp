@@ -148,6 +148,20 @@ void MazeMaker::SetBlock(int x, int y, BLOCKTYPE type)
 	m_blocks[y*m_w + x].Type = type;
 }
 
+void MazeMaker::GetPlayerStart(int & x, int & y)
+{
+	// pointless inefficiency lol
+	// todo: store map terrain and objects in separate layers
+	for (int i = 0; i < m_w*m_h; i++) {
+		if (m_blocks[i].Type == BL_PLAYERSTART)
+		{
+			x = i % m_w;
+			y = i / m_w;
+			return;
+		}
+	}
+}
+
 // cut out blocks between node edges (randomly choose x-first or y-first path for diagonals)
 void MazeMaker::DrawPassageBetween(Node *n1, Node *n2)
 {

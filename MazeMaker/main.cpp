@@ -1,38 +1,80 @@
 #include <iostream>
+#include <SDL.h>
+#include <memory>
+#include <chrono>
 
+#include "MazeDemo.h"
 #include "MazeMaker.h"
 
-void printMaze(MazeMaker &maze);
+const int MAZE_WIDTH = 21;
+const int MAZE_HEIGHT = 21;
+const int FRAMES_PER_SEC = 60;
+const float TIME_STEP = 1.0f / FRAMES_PER_SEC;
+
+int SCREEN_WIDTH = 640;
+int SCREEN_HEIGHT = 480;
+
+static std::unique_ptr<MazeDemo> mazeDemo;
+static SDL_Surface *screenSurface;
+static SDL_Window *window;
+
+int main(int argc, char *argv[]);
+bool Init();
+void MainLoop();
+void Shutdown();
 
 int main(int argc, char *argv[]) {
-	std::cout << "blah" << std::endl;
-
-	MazeNode n1(0, 0);
-	MazeNode n2(3, 4);
-
-	std::cout << "Distance from n1 to n2: " << n1.DistanceTo(n2) << std::endl;
-	std::cout << "Distance from n2 to n1: " << n2.DistanceTo(n1) << std::endl;
-
-	MazeMaker maze(21, 21);
-	maze.GenerateMaze();
-	printMaze(maze);
+	if (!Init()) {
+		std::cout << "init() failed: error - " << SDL_GetError() << std::endl;
+		return 1;
+	}
+	MainLoop();
+	Shutdown();
 
 	return 0;
 }
 
-void printMaze(MazeMaker &maze) {
-	for (int y = 0; y < maze.Height(); y++) {
-		for (int x = 0; x < maze.Width(); x++) {
-			char c = '0';
-			switch (maze.GetBlock(x, y).Type) {
-			case BL_EMPTY: c = ' '; break;
-			case BL_SOLID: c = (char)219; break;
-			case BL_PLAYERSTART: c = 'P'; break;
-			case BL_END: c = 'X'; break;
-			}
-			std::cout << c;
-		}
-		std::cout << std::endl;
+bool Init()
+{
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+		return false;
+
+	window = SDL_CreateWindow("Maze Demo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+		SCREEN_WIDTH, SCREEN_HEIGHT,
+		SDL_WINDOW_SHOWN);
+	if (!window)
+		return false;
+
+	screenSurface = SDL_GetWindowSurface(window);
+	if (!screenSurface)
+		return false;
+
+	mazeDemo = std::make_unique<MazeDemo>();
+	mazeDemo->Init(MAZE_WIDTH, MAZE_HEIGHT, true);
+	return true;
+}
+
+void MainLoop()
+{
+	auto prevTime = std::chrono::steady_clock::now();
+	auto curTime = std::chrono::steady_clock::now();
+	while (!mazeDemo->IsFinished()) {
+		curTime = std::chrono::steady_clock::now();
+		float dt = std::chrono::duration<float>(curTime - prevTime).count();
+		if (dt < TIME_STEP)
+			continue;
+		prevTime = std::chrono::steady_clock::now();
+		mazeDemo->Update(dt);
+		mazeDemo->Render(screenSurface);
+		SDL_UpdateWindowSurface(window);
 	}
-	std::cout << std::endl;
+}
+
+void Shutdown()
+{
+	SDL_DestroyWindow(window);
+	window = nullptr;
+	screenSurface = nullptr; // auto-freed on window destroy
+	
+	SDL_Quit();
 }

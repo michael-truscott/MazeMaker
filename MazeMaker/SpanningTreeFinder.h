@@ -9,7 +9,7 @@ public:
 	virtual ~Node() {};
 	virtual float DistanceTo(Node &n) const = 0;
 
-	int NumEdges() const { return m_edges.size(); }
+	int NumEdges() const { return (int)m_edges.size(); }
 	Node* GetEdge(int i) const { return m_edges[i]; }
 	void AddEdge(Node* node) { m_edges.push_back(node); }
 

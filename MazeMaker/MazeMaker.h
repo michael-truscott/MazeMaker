@@ -32,9 +32,11 @@ public:
 	void SetBlock(int x, int y, BLOCKTYPE type);
 	int Width() { return m_w; }
 	int Height() { return m_h; }
+
+	void GetPlayerStart(int &x, int &y);
 private:
 	int m_w, m_h;
-	// TODO: smart pointers?
+	// TODO: smart pointer?
 	MazeBlock* m_blocks;
 
 	void DrawPassageBetween(Node *n1, Node *n2);
