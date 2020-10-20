@@ -26,9 +26,9 @@ float MazeNode::DistanceTo(Node & n) const
 // MazeMaker
 //=============================================================================================================
 
-MazeMaker::MazeMaker(int w, int h) :
-	m_w(w),
-	m_h(h)
+MazeMaker::MazeMaker(int _w, int _h) :
+	w(_w),
+	h(_h)
 {
 	m_blocks = new MazeBlock[w*h]{ BL_SOLID };
 }
@@ -41,7 +41,7 @@ MazeMaker::~MazeMaker()
 void MazeMaker::ClearMaze()
 {
 	// Empty all
-	for (int i = 0; i < m_w * m_h; i++)
+	for (int i = 0; i < w * h; i++)
 		m_blocks[i].Type = BL_SOLID;
 }
 
@@ -62,8 +62,8 @@ void MazeMaker::GenerateMaze(float density)
 	// #X X X X#
 	// #########
 	// mazes should favour odd widths/heights to make the most of the available space
-	int effectiveWidth = (m_w - 1) / 2;
-	int effectiveHeight = (m_h - 1) / 2;
+	int effectiveWidth = (w - 1) / 2;
+	int effectiveHeight = (h - 1) / 2;
 	int maxNodes = effectiveWidth * effectiveHeight;
 
 	std::srand((uint32_t)std::time(nullptr));
@@ -128,35 +128,23 @@ void MazeMaker::GenerateMaze(float density)
 
 MazeBlock MazeMaker::GetBlock(int x, int y)
 {
-#ifdef _DEBUG
-	if (x < 0 || x >= m_w)
-		throw std::exception("x index out of range");
-	if (y < 0 || y >= m_h)
-		throw std::exception("y index out of range");
-#endif
-	return m_blocks[y*m_w + x];
+	return m_blocks[y*w + x];
 }
 
 void MazeMaker::SetBlock(int x, int y, BLOCKTYPE type)
 {
-#ifdef _DEBUG
-	if (x < 0 || x >= m_w)
-		throw std::exception("x index out of range");
-	if (y < 0 || y >= m_h)
-		throw std::exception("y index out of range");
-#endif
-	m_blocks[y*m_w + x].Type = type;
+	m_blocks[y*w + x].Type = type;
 }
 
 void MazeMaker::GetPlayerStart(int & x, int & y)
 {
 	// pointless inefficiency lol
 	// todo: store map terrain and objects in separate layers
-	for (int i = 0; i < m_w*m_h; i++) {
+	for (int i = 0; i < w*h; i++) {
 		if (m_blocks[i].Type == BL_PLAYERSTART)
 		{
-			x = i % m_w;
-			y = i / m_w;
+			x = i % w;
+			y = i / w;
 			return;
 		}
 	}

@@ -22,7 +22,7 @@ struct MazeBlock {
 class MazeMaker
 {
 public:
-	MazeMaker(int w, int h);
+	MazeMaker(int _w, int h_);
 	~MazeMaker();
 
 	void ClearMaze();
@@ -30,12 +30,11 @@ public:
 
 	MazeBlock GetBlock(int x, int y);
 	void SetBlock(int x, int y, BLOCKTYPE type);
-	int Width() { return m_w; }
-	int Height() { return m_h; }
 
 	void GetPlayerStart(int &x, int &y);
+
+	int w, h;
 private:
-	int m_w, m_h;
 	// TODO: smart pointer?
 	MazeBlock* m_blocks;
 

@@ -12,8 +12,8 @@ void SetPixel(SDL_Surface *surface, int x, int y, Uint32 color)
 }
 
 void PrintMaze(MazeMaker &maze) {
-	for (int y = 0; y < maze.Height(); y++) {
-		for (int x = 0; x < maze.Width(); x++) {
+	for (int y = 0; y < maze.h; y++) {
+		for (int x = 0; x < maze.w; x++) {
 			char c = '0';
 			switch (maze.GetBlock(x, y).Type) {
 			case BL_EMPTY: c = ' '; break;
@@ -30,8 +30,8 @@ void PrintMaze(MazeMaker &maze) {
 
 void RenderMazePreview(MazeMaker &maze, Player &player, SDL_Surface *buffer, int blockSize)
 {
-	for (int y = 0; y < maze.Height(); y++) {
-		for (int x = 0; x < maze.Width(); x++) {
+	for (int y = 0; y < maze.h; y++) {
+		for (int x = 0; x < maze.w; x++) {
 			MazeBlock block = maze.GetBlock(x, y);
 			Uint32 color;
 			switch (block.Type) {
@@ -106,8 +106,10 @@ RAYHIT_DIR RayHitDir(Vec2f offset)
 
 Uint32 SampleTexture(SDL_Surface * surface, float x, float y)
 {
-	// todo: test me
-	int sX = surface->w * SDL_fmod(x, 1.0f);
-	int sY = surface->h * SDL_fmod(y, 1.0f);
+	// should probs fix for bitmaps with less than 32 bpp
+	int sX = (surface->w - 1) * SDL_fmod(x, 1.0f);
+	int sY = (surface->h - 1) * SDL_fmod(y, 1.0f);
+
+	// bilinear filtering?
 	return ((Uint32*)surface->pixels)[sY * surface->w + sX];
 }

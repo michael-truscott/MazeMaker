@@ -52,7 +52,7 @@ bool Init()
 		return false;
 
 	mazeDemo = std::make_unique<MazeDemo>();
-	mazeDemo->Init(MAZE_WIDTH, MAZE_HEIGHT, true);
+	mazeDemo->Init(MAZE_WIDTH, MAZE_HEIGHT, false);
 	return true;
 }
 
@@ -60,16 +60,21 @@ void MainLoop()
 {
 	auto prevTime = std::chrono::steady_clock::now();
 	auto curTime = std::chrono::steady_clock::now();
+	float time = 0;
 	while (!mazeDemo->IsFinished()) {
 		curTime = std::chrono::steady_clock::now();
 		float dt = std::chrono::duration<float>(curTime - prevTime).count();
-		if (dt < TIME_STEP)
-			continue;
+		time += dt;
 		prevTime = std::chrono::steady_clock::now();
+
 		char title[50];
 		sprintf(title, "MazeMaker: %d FPS", (int)(1.0f / dt));
 		SDL_SetWindowTitle(window, title);
-		mazeDemo->Update(dt);
+
+		while (time > TIME_STEP) {
+			mazeDemo->Update(TIME_STEP);
+			time -= TIME_STEP;
+		}
 		mazeDemo->Render(screenSurface);
 		SDL_UpdateWindowSurface(window);
 	}

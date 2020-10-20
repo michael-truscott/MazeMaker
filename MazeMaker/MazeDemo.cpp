@@ -6,20 +6,23 @@
 
 MazeDemo::MazeDemo() :
 	m_mazeMaker(nullptr),
+	m_bricks(nullptr),
 	m_isFinished(false),
-	m_fov((float)M_PI / 3.0f),
+	m_fov(DEFAULT_FOV),
 	m_fisheyeCorrection(true)
 {
 }
 
 MazeDemo::~MazeDemo()
 {
+	SDL_FreeSurface(m_bricks);
 	delete m_mazeMaker;
 	delete m_player;
 }
 
 void MazeDemo::Init(int w, int h, bool testMap)
 {
+	m_bricks = SDL_LoadBMP("bricks.bmp");
 	m_mazeMaker = new MazeMaker(w, h);
 
 	if (testMap) {
@@ -52,7 +55,7 @@ void MazeDemo::Init(int w, int h, bool testMap)
 bool MazeDemo::CollidedWithMap(Vec2f v) {
 	int x = (int)v.x;
 	int y = (int)v.y;
-	if (x < 0 || x >= m_mazeMaker->Width() || y < 0 || y >= m_mazeMaker->Height())
+	if (x < 0 || x >= m_mazeMaker->w || y < 0 || y >= m_mazeMaker->h)
 		return true;
 
 	return m_mazeMaker->GetBlock(x, y).Type == BL_SOLID;
@@ -134,53 +137,69 @@ void MazeDemo::Render(SDL_Surface *buffer)
 
 		bool hitWall = false;
 		float distToWall = 0;
-		Uint32 wallColor = 0;
+		float tx = 0, ty = 0;
 
 		Vec2f eye = Vec2f{ SDL_cosf(rayAngle), -SDL_sinf(rayAngle) };
 		bool odd = false;
 
-		// get distance to wall
+		// get distance to wall for this column's ray
 		while (!hitWall && distToWall < MAX_RAYDEPTH) {
-			distToWall += 0.05f; // todo: speed up by only testing on guaranteed x/y intercepts (i.e. wolf3d)
+			distToWall += 0.01f; // todo: speed up by only testing on guaranteed x/y intercepts (i.e. wolf3d)
 
 			int testX = (int)(m_player->pos.x + eye.x * distToWall);
 			int testY = (int)(m_player->pos.y + eye.y * distToWall);
 
 			// bounds check
-			if (testX < 0 || testY < 0 || testX >= m_mazeMaker->Width() || testY >= m_mazeMaker->Height()) {
+			if (testX < 0 || testY < 0 || testX >= m_mazeMaker->w || testY >= m_mazeMaker->h) {
 				hitWall = true;
 				distToWall = MAX_RAYDEPTH;
 				break;
 			}
 			MazeBlock block = m_mazeMaker->GetBlock(testX, testY);
-			switch (block.Type) {
-				case BL_SOLID: // we've got a hit
-					// correct for fisheye at larger fovs
-					float theta = std::abs(rayAngle - m_player->angle);
-					if (m_fisheyeCorrection) {
-						float correction = SDL_cosf(theta);
-						distToWall *= correction;
-					}
+			if (block.Type == BL_SOLID) { // we've got a hit
+				hitWall = true;
 
-					hitWall = true;
-					odd = (((testX + testY) % 2) == 1);
+				// Get texture sample x coord
+				Vec2f blockMid(testX + 0.5f, testY + 0.5f);
+				Vec2f testPoint = m_player->pos + (eye * distToWall);
+				Vec2f offset = testPoint - blockMid;
+				switch (RayHitDir(offset)) {
+				case RH_TOP:
+					tx = testPoint.x - testX;
 					break;
+				case RH_BOTTOM:
+					tx = 1.0f - (testPoint.x - testX);
+					break;
+				case RH_LEFT:
+					tx = testPoint.y - testY;
+					break;
+				case RH_RIGHT:
+					tx = 1.0f - (testPoint.y - testY);
+					break;
+				}
+
+				// correct for fisheye at larger fovs
+				float theta = std::abs(rayAngle - m_player->angle);
+				if (m_fisheyeCorrection) {
+					float correction = SDL_cosf(theta);
+					distToWall *= correction;
+				}
 			}
 		}
 
-		int ceilingEnd = (int)((float)(buffer->h) / 2 - buffer->h / (float)distToWall);
-		int floorStart = buffer->h - ceilingEnd;
+		int wallTop = (int)((float)(buffer->h) / 2 - buffer->h / (float)distToWall);
+		int wallBottom = buffer->h - wallTop;
 
 		// draw the column
 		Uint32 color;
 		for (int y = 0; y < buffer->h; y++) {
-			if (y <= ceilingEnd) { // ceiling
+			if (y <= wallTop) { // ceiling
 				color = SDL_MapRGB(buffer->format, 0xFF, 0xAF, 0x41);
 			}
-			else if (y > ceilingEnd && y <= floorStart) { // wall
-				// TODO: texture sampling
-				color = odd ? SDL_MapRGB(buffer->format, 0xFF, 0xDD, 0xDD) :
-					SDL_MapRGB(buffer->format, 0xCC, 0xCC, 0xEE);
+			else if (y > wallTop && y <= wallBottom) { // wall
+				// how far is y between wallTop and wallBottom
+				ty = (y - wallTop) / (float)(wallBottom - wallTop);
+				color = SampleTexture(m_bricks, tx, ty);
 			}
 			else { // floor
 				float scale = 1.0f;
