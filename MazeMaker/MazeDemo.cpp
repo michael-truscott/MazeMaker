@@ -38,9 +38,18 @@ void MazeDemo::Init(int w, int h, bool testMap)
 
 	m_player = std::make_unique<Player>();
 	// offset to the middle of the block
-	m_player->x = (float)playerX + 0.5f;
-	m_player->y = (float)playerY + 0.5f;
+	m_player->pos.x = (float)playerX + 0.5f;
+	m_player->pos.y = (float)playerY + 0.5f;
 	m_player->angle = 0.0f;
+}
+
+bool MazeDemo::CollidedWithMap(Vec2f v) {
+	int x = (int)v.x;
+	int y = (int)v.y;
+	if (x < 0 || x >= m_mazeMaker->Width() || y < 0 || y >= m_mazeMaker->Height())
+		return true;
+
+	return m_mazeMaker->GetBlock(x, y).Type == BL_SOLID;
 }
 
 void MazeDemo::Update(float dt)
@@ -53,6 +62,7 @@ void MazeDemo::Update(float dt)
 			return;
 		}
 
+		Vec2f playerMoveDist{ 0,0 };
 		if (ev.type == SDL_KEYDOWN) {
 			switch (ev.key.keysym.sym) {
 			case SDLK_ESCAPE:
@@ -64,29 +74,25 @@ void MazeDemo::Update(float dt)
 			case SDLK_w: // walk
 			{
 				Vec2f view = m_player->GetViewVector();
-				m_player->x += view.x * MOVE_SPEED * dt;
-				m_player->y += view.y * MOVE_SPEED * dt;
+				playerMoveDist = view * (MOVE_SPEED * dt);
 				break;
 			}
 			case SDLK_s:
 			{
 				Vec2f view = m_player->GetViewVector();
-				m_player->x -= view.x * MOVE_SPEED * dt;
-				m_player->y -= view.y * MOVE_SPEED * dt;
+				playerMoveDist = view * (-MOVE_SPEED * dt);
 				break;
 			}
 			case SDLK_q: // strafe
 			{
 				Vec2f strafe = m_player->GetStrafeVector();
-				m_player->x -= strafe.x * MOVE_SPEED * dt;
-				m_player->y -= strafe.y * MOVE_SPEED * dt;
+				playerMoveDist = strafe * (-MOVE_SPEED * dt);
 				break;
 			}
 			case SDLK_e:
 			{
 				Vec2f strafe = m_player->GetStrafeVector();
-				m_player->x += strafe.x * MOVE_SPEED * dt;
-				m_player->y += strafe.y * MOVE_SPEED * dt;
+				playerMoveDist = strafe * (MOVE_SPEED * dt);
 				break;
 			}
 			case SDLK_a: // rotate
@@ -102,8 +108,10 @@ void MazeDemo::Update(float dt)
 				m_fisheyeCorrection = !m_fisheyeCorrection;
 				break;
 			}
-			
 		}
+		Vec2f newPos = m_player->pos + playerMoveDist;
+		if (!CollidedWithMap(newPos)) // very basic collision response
+			m_player->pos = newPos;
 	}
 }
 
@@ -129,8 +137,9 @@ void MazeDemo::Render(SDL_Surface *buffer)
 		while (!hitWall && distToWall < MAX_RAYDEPTH) {
 			distToWall += 0.1f;
 
-			int testX = (int)(m_player->x + eye.x * distToWall);
-			int testY = (int)(m_player->y + eye.y * distToWall);
+			Vec2f testVec = m_player->pos + eye * distToWall;
+			int testX = (int)testVec.x;
+			int testY = (int)testVec.y;
 
 			// bounds check
 			if (testX < 0 || testY < 0 || testX >= m_mazeMaker->Width() || testY >= m_mazeMaker->Height()) {
@@ -160,17 +169,17 @@ void MazeDemo::Render(SDL_Surface *buffer)
 		// draw the column
 		Uint32 color;
 		for (int y = 0; y < buffer->h; y++) {
-			if (y < ceilingEnd) { // ceiling
-				float scale = 1.0f - ((float)y / (buffer->h / 2));
-				color = SDL_MapRGB(buffer->format, scale * 0xFF, scale * 0xAF, scale * 0x41);
+			if (y <= ceilingEnd) { // ceiling
+				color = SDL_MapRGB(buffer->format, 0xFF, 0xAF, 0x41);
 			}
 			else if (y > ceilingEnd && y <= floorStart) { // wall
+				// TODO: texture sampling
 				color = odd ? SDL_MapRGB(buffer->format, 0xFF, 0xDD, 0xDD) :
 					SDL_MapRGB(buffer->format, 0xCC, 0xCC, 0xEE);
 			}
 			else { // floor
 				float scale = 1.0f;
-				color = SDL_MapRGB(buffer->format, scale * 0x95, scale * 0xA5, scale * 0xA6);
+				color = SDL_MapRGB(buffer->format, 0x95, 0xA5, 0xA6);
 			}
 			SetPixel(buffer, x, y, color);
 		}

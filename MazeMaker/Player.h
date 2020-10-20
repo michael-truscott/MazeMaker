@@ -10,7 +10,7 @@ public:
 	Vec2f GetViewVector();
 	Vec2f GetStrafeVector();
 
-	float x, y;
+	Vec2f pos;
 	float angle;
 };
 

@@ -35,7 +35,7 @@ void RenderMazePreview(MazeMaker &maze, Player &player, SDL_Surface *buffer, int
 			Uint32 color;
 			switch (block.Type) {
 			case BL_EMPTY: color = SDL_MapRGB(buffer->format, 0x00, 0x00, 0x00); break;
-			case BL_SOLID: color = SDL_MapRGB(buffer->format, 0xFF, 0xFF, 0xFF); break;
+			case BL_SOLID: color = SDL_MapRGB(buffer->format, 0xCC, 0x33, 0x33); break;
 			case BL_END: color = SDL_MapRGB(buffer->format, 0x00, 0xFF, 0x00); break;
 			default: color = SDL_MapRGB(buffer->format, 0x00, 0x00, 0x00); break;
 			}
@@ -45,15 +45,18 @@ void RenderMazePreview(MazeMaker &maze, Player &player, SDL_Surface *buffer, int
 	}
 
 	// draw player
-	SDL_Rect rect{ (int)((player.x - 0.5f) * blockSize), (int)((player.y - 0.5f) * blockSize),
+	Uint32 playerColour = SDL_MapRGB(buffer->format, 0xFF, 0xFF, 0x00);
+	SDL_Rect rect{ (int)((player.pos.x - 0.5f) * blockSize), (int)((player.pos.y - 0.5f) * blockSize),
 					blockSize, blockSize };
-	SDL_FillRect(buffer, &rect, SDL_MapRGB(buffer->format, 0x00, 0x00, 0xFF));
+	SDL_FillRect(buffer, &rect, playerColour);
 
 	// draw player view
 	Vec2f view = player.GetViewVector();
-	DrawLine(Vec2f{ player.x * blockSize, player.y * blockSize },
-		Vec2f{ (player.x + view.x) * blockSize, (player.y + view.y) * blockSize },
-		buffer, SDL_MapRGB(buffer->format, 0x00, 0x00, 0xFF));
+	Vec2f v0 = player.pos * blockSize;
+	Vec2f v1 = (player.pos + view * 2.0f) * blockSize;
+	if (v1.x < 1) v1.x = 1;
+	if (v1.y < 1) v1.y = 1;
+	DrawLine(v0, v1, buffer, playerColour);
 }
 
 void DrawLine(Vec2f v0, Vec2f v1, SDL_Surface *image, Uint32 color)

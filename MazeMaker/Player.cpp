@@ -2,7 +2,8 @@
 #include <SDL.h>
 
 Player::Player() :
-	x(0), y(0), angle(0)
+	pos(0,0),
+	angle(0)
 {
 }
 

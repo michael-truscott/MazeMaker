@@ -21,6 +21,8 @@ public:
 	bool IsFinished() { return m_isFinished; }
 
 private:
+	bool CollidedWithMap(Vec2f v);
+
 	std::unique_ptr<MazeMaker> m_mazeMaker;
 	std::unique_ptr<Player> m_player;
 	bool m_isFinished;

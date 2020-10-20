@@ -1,3 +1,5 @@
+#pragma warning (disable : 4996)
+
 #include <iostream>
 #include <SDL.h>
 #include <memory>
@@ -11,8 +13,8 @@ const int MAZE_HEIGHT = 21;
 const int FRAMES_PER_SEC = 60;
 const float TIME_STEP = 1.0f / FRAMES_PER_SEC;
 
-int SCREEN_WIDTH = 640;
-int SCREEN_HEIGHT = 480;
+int SCREEN_WIDTH = 800;
+int SCREEN_HEIGHT = 600;
 
 static std::unique_ptr<MazeDemo> mazeDemo;
 static SDL_Surface *screenSurface;
@@ -64,6 +66,9 @@ void MainLoop()
 		if (dt < TIME_STEP)
 			continue;
 		prevTime = std::chrono::steady_clock::now();
+		char title[50];
+		sprintf(title, "MazeMaker: %d FPS", (int)(1.0f / dt));
+		SDL_SetWindowTitle(window, title);
 		mazeDemo->Update(dt);
 		mazeDemo->Render(screenSurface);
 		SDL_UpdateWindowSurface(window);
