@@ -6,10 +6,20 @@
 #include "Player.h"
 #include <cmath>
 
-const float MOVE_SPEED = 10.0f;
-const float ROTATE_SPEED = 3.0f;
+const float MOVE_SPEED = 5.0f;
+const float ROTATE_SPEED = 2.5f;
 const float MAX_RAYDEPTH = 64.0f;
 const float DEFAULT_FOV = (float)M_PI / 3.0f;
+const float DEFAULT_WALLSCALE = 2.0f;
+
+struct InputState {
+	bool forward;
+	bool back;
+	bool strafeL;
+	bool strafeR;
+	bool rotateL;
+	bool rotateR;
+};
 
 class MazeDemo
 {
@@ -25,6 +35,7 @@ public:
 
 private:
 	bool CollidedWithMap(Vec2f v);
+	InputState m_inputState;
 
 	SDL_Surface *m_bricks;
 	MazeMaker *m_mazeMaker;
@@ -32,4 +43,6 @@ private:
 	bool m_isFinished;
 	float m_fov;
 	bool m_fisheyeCorrection;
+	bool m_showMiniMap;
+	float m_wallScaleFactor;
 };

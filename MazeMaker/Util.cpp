@@ -36,7 +36,7 @@ void RenderMazePreview(MazeMaker &maze, Player &player, SDL_Surface *buffer, int
 			Uint32 color;
 			switch (block.Type) {
 			case BL_EMPTY: color = SDL_MapRGB(buffer->format, 0x00, 0x00, 0x00); break;
-			case BL_SOLID: color = SDL_MapRGB(buffer->format, 0xCC, 0x33, 0x33); break;
+			case BL_SOLID: color = SDL_MapRGB(buffer->format, 0xCC, 0xCC, 0xCC); break;
 			case BL_END: color = SDL_MapRGB(buffer->format, 0x00, 0xFF, 0x00); break;
 			default: color = SDL_MapRGB(buffer->format, 0x00, 0x00, 0x00); break;
 			}

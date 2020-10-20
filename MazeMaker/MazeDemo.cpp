@@ -9,7 +9,9 @@ MazeDemo::MazeDemo() :
 	m_bricks(nullptr),
 	m_isFinished(false),
 	m_fov(DEFAULT_FOV),
-	m_fisheyeCorrection(true)
+	m_fisheyeCorrection(true),
+	m_showMiniMap(true),
+	m_wallScaleFactor(DEFAULT_WALLSCALE)
 {
 }
 
@@ -63,7 +65,6 @@ bool MazeDemo::CollidedWithMap(Vec2f v) {
 
 void MazeDemo::Update(float dt)
 {
-	//std::cout << "dt: " << dt << std::endl;
 	SDL_Event ev;
 	while (SDL_PollEvent(&ev)) {
 		if (ev.type == SDL_QUIT) {
@@ -71,7 +72,6 @@ void MazeDemo::Update(float dt)
 			return;
 		}
 
-		Vec2f playerMoveDist{ 0,0 };
 		if (ev.type == SDL_KEYDOWN) {
 			switch (ev.key.keysym.sym) {
 			case SDLK_ESCAPE:
@@ -80,48 +80,53 @@ void MazeDemo::Update(float dt)
 				SDL_PushEvent(&quitEv);
 				break;
 
-			case SDLK_w: // walk
-			{
-				Vec2f view = m_player->GetViewVector();
-				playerMoveDist = view * (MOVE_SPEED * dt);
-				break;
-			}
-			case SDLK_s:
-			{
-				Vec2f view = m_player->GetViewVector();
-				playerMoveDist = view * (-MOVE_SPEED * dt);
-				break;
-			}
-			case SDLK_q: // strafe
-			{
-				Vec2f strafe = m_player->GetStrafeVector();
-				playerMoveDist = strafe * (-MOVE_SPEED * dt);
-				break;
-			}
-			case SDLK_e:
-			{
-				Vec2f strafe = m_player->GetStrafeVector();
-				playerMoveDist = strafe * (MOVE_SPEED * dt);
-				break;
-			}
-			case SDLK_a: // rotate
-				m_player->angle += ROTATE_SPEED * dt;
-				std::cout << "player angle: " << m_player->angle << std::endl;
-				break;
-			case SDLK_d:
-				m_player->angle -= ROTATE_SPEED * dt;
-				std::cout << "player angle: " << m_player->angle << std::endl;
-				break;
-
 			case SDLK_f:
 				m_fisheyeCorrection = !m_fisheyeCorrection;
 				break;
+
+			case SDLK_p:
+				m_showMiniMap = !m_showMiniMap;
+				break;
+
+			case SDLK_w: m_inputState.forward = true; break;
+			case SDLK_s: m_inputState.back = true; break;
+			case SDLK_q: m_inputState.strafeL = true; break;
+			case SDLK_e: m_inputState.strafeR = true; break;
+			case SDLK_a: m_inputState.rotateL = true; break;
+			case SDLK_d: m_inputState.rotateR = true; break;
 			}
 		}
-		Vec2f newPos = m_player->pos + playerMoveDist;
-		if (!CollidedWithMap(newPos)) // very basic collision response
-			m_player->pos = newPos;
+		else if (ev.type == SDL_KEYUP) {
+			switch (ev.key.keysym.sym) {
+			case SDLK_w: m_inputState.forward = false; break;
+			case SDLK_s: m_inputState.back = false; break;
+			case SDLK_q: m_inputState.strafeL = false; break;
+			case SDLK_e: m_inputState.strafeR = false; break;
+			case SDLK_a: m_inputState.rotateL = false; break;
+			case SDLK_d: m_inputState.rotateR = false; break;
+			}
+		}
 	}
+
+	if (m_inputState.rotateL)
+		m_player->angle += ROTATE_SPEED * dt;
+	if (m_inputState.rotateR)
+		m_player->angle -= ROTATE_SPEED * dt;
+
+	Vec2f playerMoveDist{ 0,0 };
+	if (m_inputState.forward)
+		playerMoveDist = m_player->GetViewVector() * (MOVE_SPEED * dt);
+	if (m_inputState.back)
+		playerMoveDist = m_player->GetViewVector() * (-MOVE_SPEED * dt);
+	if (m_inputState.strafeL)
+		playerMoveDist = m_player->GetStrafeVector() * (-MOVE_SPEED * dt);
+	if (m_inputState.strafeR)
+		playerMoveDist = m_player->GetStrafeVector() * (MOVE_SPEED * dt);
+	
+
+	Vec2f newPos = m_player->pos + playerMoveDist;
+	if (!CollidedWithMap(newPos)) // very basic collision response
+		m_player->pos = newPos;
 }
 
 void MazeDemo::Render(SDL_Surface *buffer)
@@ -187,7 +192,7 @@ void MazeDemo::Render(SDL_Surface *buffer)
 			}
 		}
 
-		int wallTop = (int)((float)(buffer->h) / 2 - buffer->h / (float)distToWall);
+		int wallTop = (int)((float)(buffer->h) / 2 - buffer->h / ((float)distToWall * m_wallScaleFactor));
 		int wallBottom = buffer->h - wallTop;
 
 		// draw the column
@@ -210,5 +215,6 @@ void MazeDemo::Render(SDL_Surface *buffer)
 	}
 
 	int blockSize = 8;
-	RenderMazePreview(*m_mazeMaker, *m_player, buffer, blockSize);
+	if (m_showMiniMap)
+		RenderMazePreview(*m_mazeMaker, *m_player, buffer, blockSize);
 }
