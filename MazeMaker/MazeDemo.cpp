@@ -5,16 +5,22 @@
 #include "Util.h"
 
 MazeDemo::MazeDemo() :
-	m_mazeMaker(),
+	m_mazeMaker(nullptr),
 	m_isFinished(false),
 	m_fov((float)M_PI / 3.0f),
 	m_fisheyeCorrection(true)
 {
 }
 
+MazeDemo::~MazeDemo()
+{
+	delete m_mazeMaker;
+	delete m_player;
+}
+
 void MazeDemo::Init(int w, int h, bool testMap)
 {
-	m_mazeMaker = std::make_unique<MazeMaker>(w, h);
+	m_mazeMaker = new MazeMaker(w, h);
 
 	if (testMap) {
 		// test map: just a big empty room with a wall around the perimeter
@@ -36,7 +42,7 @@ void MazeDemo::Init(int w, int h, bool testMap)
 	int playerX, playerY;
 	m_mazeMaker->GetPlayerStart(playerX, playerY);
 
-	m_player = std::make_unique<Player>();
+	m_player = new Player();
 	// offset to the middle of the block
 	m_player->pos.x = (float)playerX + 0.5f;
 	m_player->pos.y = (float)playerY + 0.5f;
@@ -128,18 +134,17 @@ void MazeDemo::Render(SDL_Surface *buffer)
 
 		bool hitWall = false;
 		float distToWall = 0;
+		Uint32 wallColor = 0;
 
 		Vec2f eye = Vec2f{ SDL_cosf(rayAngle), -SDL_sinf(rayAngle) };
 		bool odd = false;
 
-		
 		// get distance to wall
 		while (!hitWall && distToWall < MAX_RAYDEPTH) {
-			distToWall += 0.1f;
+			distToWall += 0.05f; // todo: speed up by only testing on guaranteed x/y intercepts (i.e. wolf3d)
 
-			Vec2f testVec = m_player->pos + eye * distToWall;
-			int testX = (int)testVec.x;
-			int testY = (int)testVec.y;
+			int testX = (int)(m_player->pos.x + eye.x * distToWall);
+			int testY = (int)(m_player->pos.y + eye.y * distToWall);
 
 			// bounds check
 			if (testX < 0 || testY < 0 || testX >= m_mazeMaker->Width() || testY >= m_mazeMaker->Height()) {

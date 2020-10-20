@@ -13,6 +13,7 @@ class MazeDemo
 {
 public:
 	MazeDemo();
+	~MazeDemo();
 
 	void Init(int w, int h, bool testMap = false);
 	void Update(float dt);
@@ -23,8 +24,8 @@ public:
 private:
 	bool CollidedWithMap(Vec2f v);
 
-	std::unique_ptr<MazeMaker> m_mazeMaker;
-	std::unique_ptr<Player> m_player;
+	MazeMaker *m_mazeMaker;
+	Player *m_player;
 	bool m_isFinished;
 	float m_fov;
 	bool m_fisheyeCorrection;

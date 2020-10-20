@@ -1,6 +1,7 @@
 #include "Util.h"
 #include <iostream>
 #include <algorithm>
+#include <cmath>
 
 void SetPixel(SDL_Surface *surface, int x, int y, Uint32 color)
 {
@@ -89,4 +90,24 @@ void DrawLine(Vec2f v0, Vec2f v1, SDL_Surface *image, Uint32 color)
 			error2 -= dx * 2;
 		}
 	}
+}
+
+RAYHIT_DIR RayHitDir(Vec2f offset)
+{
+	// Compensate for flipped y
+	float angle = SDL_atan2f(offset.x, -offset.y) - M_PI / 4;
+	if (angle < 0.0f) angle += 2 * M_PI; // Put in the range [0,2*PI)
+
+	if (angle >= 0.0f && angle < M_PI / 2) return RH_RIGHT;
+	else if (angle >= M_PI / 2 && angle < M_PI) return RH_TOP;
+	else if (angle >= M_PI && angle < 3 * M_PI / 2) return RH_LEFT;
+	else return RH_BOTTOM;
+}
+
+Uint32 SampleTexture(SDL_Surface * surface, float x, float y)
+{
+	// todo: test me
+	int sX = surface->w * SDL_fmod(x, 1.0f);
+	int sY = surface->h * SDL_fmod(y, 1.0f);
+	return ((Uint32*)surface->pixels)[sY * surface->w + sX];
 }
