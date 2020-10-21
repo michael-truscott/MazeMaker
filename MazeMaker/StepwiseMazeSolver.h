@@ -3,8 +3,9 @@
 #include "MazeMaker.h"
 #include "Player.h"
 #include <utility>
+#include "IMazeSolver.h"
 
-class StepwiseMazeSolver
+class StepwiseMazeSolver : public IMazeSolver
 {
 public:
 	StepwiseMazeSolver(MazeMaker *maze, Player *player);

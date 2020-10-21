@@ -95,8 +95,8 @@ void DrawLine(Vec2f v0, Vec2f v1, SDL_Surface *image, Uint32 color)
 RAYHIT_DIR RayHitDir(Vec2f offset)
 {
 	// Compensate for flipped y
-	float angle = SDL_atan2f(offset.x, -offset.y) - M_PI / 4;
-	if (angle < 0.0f) angle += 2 * M_PI; // Put in the range [0,2*PI)
+	float angle = SDL_atan2f(offset.x, -offset.y) - ((float)M_PI / 4);
+	if (angle < 0.0f) angle += (float)(2 * M_PI); // Put in the range [0,2*PI)
 
 	if (angle >= 0.0f && angle < M_PI / 2) return RH_RIGHT;
 	else if (angle >= M_PI / 2 && angle < M_PI) return RH_TOP;
@@ -107,8 +107,8 @@ RAYHIT_DIR RayHitDir(Vec2f offset)
 Uint32 SampleTexture(SDL_Surface * surface, float x, float y)
 {
 	// should probs fix for bitmaps with less than 32 bpp
-	int sX = (surface->w - 1) * SDL_fmod(x, 1.0f);
-	int sY = (surface->h - 1) * SDL_fmod(y, 1.0f);
+	int sX = (int)((surface->w - 1) * SDL_fmodf(x, 1.0f));
+	int sY = (int)((surface->h - 1) * SDL_fmodf(y, 1.0f));
 
 	// bilinear filtering?
 	return ((Uint32*)surface->pixels)[sY * surface->w + sX];

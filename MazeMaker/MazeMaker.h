@@ -1,23 +1,7 @@
 #pragma once
 
 #include "SpanningTreeFinder.h"
-
-class MazeNode : public Node {
-public:
-	MazeNode(int x, int y);
-	float DistanceTo(Node &n) const override;
-};
-
-enum BLOCKTYPE {
-	BL_EMPTY,
-	BL_SOLID,
-	BL_PLAYERSTART,
-	BL_END,
-};
-
-struct MazeBlock {
-	BLOCKTYPE Type;
-};
+#include "IMazeMaker.h"
 
 class MazeMaker
 {

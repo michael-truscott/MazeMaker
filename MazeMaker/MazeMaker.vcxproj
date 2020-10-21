@@ -132,6 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="IMazeMaker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MazeDemo.cpp" />
     <ClCompile Include="MazeMaker.cpp" />
@@ -142,6 +143,8 @@
     <ClCompile Include="Vec2f.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="IMazeMaker.h" />
+    <ClInclude Include="IMazeSolver.h" />
     <ClInclude Include="MazeDemo.h" />
     <ClInclude Include="MazeMaker.h" />
     <ClInclude Include="Player.h" />

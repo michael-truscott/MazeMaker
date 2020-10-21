@@ -11,16 +11,13 @@
 // MazeNode
 //=============================================================================================================
 
-MazeNode::MazeNode(int x, int y) :
-	Node(x,y)
-{
-}
-
-float MazeNode::DistanceTo(Node & n) const
-{
-	// Manhattan distance
-	return (float)(std::abs(m_x - n.X()) + std::abs(m_y - n.Y()));
-}
+class MazeNode : public Node {
+public:
+	MazeNode(int x, int y) : Node(x, y) {};
+	float DistanceTo(Node &n) const override { // Manhattan distance
+		return (float)(std::abs(m_x - n.X()) + std::abs(m_y - n.Y()));
+	}
+};
 
 //=============================================================================================================
 // MazeMaker

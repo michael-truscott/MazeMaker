@@ -39,7 +39,7 @@ private:
 
 	SDL_Surface *m_bricks;
 	MazeMaker *m_mazeMaker;
-	StepwiseMazeSolver *m_mazeSolver;
+	IMazeSolver *m_mazeSolver;
 	Player *m_player;
 	bool m_isFinished;
 	float m_fov;
