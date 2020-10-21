@@ -1,4 +1,4 @@
-#include "IMazeMaker.h"
+#include "Maze.h"
 
 Maze::Maze(int w, int h) :
 	m_w(w), m_h(h)

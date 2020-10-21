@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MazeMaker.h"
+#include "PrimMazeMaker.h"
 #include "Player.h"
 #include <utility>
 #include "IMazeSolver.h"

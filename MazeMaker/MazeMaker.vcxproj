@@ -132,10 +132,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="IMazeMaker.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Maze.cpp" />
     <ClCompile Include="MazeDemo.cpp" />
-    <ClCompile Include="MazeMaker.cpp" />
+    <ClCompile Include="PrimMazeMaker.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="SpanningTreeFinder.cpp" />
     <ClCompile Include="StepwiseMazeSolver.cpp" />
@@ -145,8 +145,9 @@
   <ItemGroup>
     <ClInclude Include="IMazeMaker.h" />
     <ClInclude Include="IMazeSolver.h" />
+    <ClInclude Include="Maze.h" />
     <ClInclude Include="MazeDemo.h" />
-    <ClInclude Include="MazeMaker.h" />
+    <ClInclude Include="PrimMazeMaker.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="SpanningTreeFinder.h" />
     <ClInclude Include="StepwiseMazeSolver.h" />

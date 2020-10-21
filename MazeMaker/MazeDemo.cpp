@@ -214,6 +214,6 @@ void MazeDemo::Render(SDL_Surface *buffer)
 	}
 
 	int blockSize = 8;
-	/*if (m_showMiniMap)
-		RenderMazePreview(*m_mazeMaker, *m_player, buffer, blockSize);*/
+	if (m_showMiniMap)
+		RenderMazePreview(m_maze.get(), *m_player, buffer, blockSize);
 }

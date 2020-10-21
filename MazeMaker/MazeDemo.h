@@ -2,7 +2,7 @@
 
 #include <SDL.h>
 #include <memory>
-#include "MazeMaker.h"
+#include "PrimMazeMaker.h"
 #include "Player.h"
 #include "StepwiseMazeSolver.h"
 

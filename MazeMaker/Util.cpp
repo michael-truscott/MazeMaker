@@ -11,11 +11,11 @@ void SetPixel(SDL_Surface *surface, int x, int y, Uint32 color)
 	*test = color;
 }
 
-void PrintMaze(MazeMaker &maze) {
-	for (int y = 0; y < maze.h; y++) {
-		for (int x = 0; x < maze.w; x++) {
+void PrintMaze(Maze *maze) {
+	for (int y = 0; y < maze->Height(); y++) {
+		for (int x = 0; x < maze->Width(); x++) {
 			char c = '0';
-			switch (maze.GetBlock(x, y).Type) {
+			switch (maze->GetBlock(x, y).Type) {
 			case BL_EMPTY: c = ' '; break;
 			case BL_SOLID: c = (char)219; break;
 			case BL_PLAYERSTART: c = 'P'; break;
@@ -28,11 +28,11 @@ void PrintMaze(MazeMaker &maze) {
 	std::cout << std::endl;
 }
 
-void RenderMazePreview(MazeMaker &maze, Player &player, SDL_Surface *buffer, int blockSize)
+void RenderMazePreview(Maze *maze, Player &player, SDL_Surface *buffer, int blockSize)
 {
-	for (int y = 0; y < maze.h; y++) {
-		for (int x = 0; x < maze.w; x++) {
-			MazeBlock block = maze.GetBlock(x, y);
+	for (int y = 0; y < maze->Height(); y++) {
+		for (int x = 0; x < maze->Width(); x++) {
+			MazeBlock block = maze->GetBlock(x, y);
 			Uint32 color;
 			switch (block.Type) {
 			case BL_EMPTY: color = SDL_MapRGB(buffer->format, 0x00, 0x00, 0x00); break;

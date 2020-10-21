@@ -6,7 +6,6 @@
 #include <chrono>
 
 #include "MazeDemo.h"
-#include "MazeMaker.h"
 
 const int MAZE_WIDTH = 21;
 const int MAZE_HEIGHT = 21;
