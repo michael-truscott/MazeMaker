@@ -26,28 +26,16 @@ MazeDemo::~MazeDemo()
 
 void MazeDemo::Init(int w, int h, bool testMap)
 {
-	m_bricks = SDL_LoadBMP("bricks.bmp");
-	m_mazeMaker = new MazeMaker(w, h);
+	m_bricks = SDL_LoadBMP("data/bricks.bmp");
+	m_mazeMaker = new PrimMazeMaker();
 
-	if (testMap) {
-		// test map: just a big empty room with a wall around the perimeter
-		for (int y = 0; y < h; y++) {
-			for (int x = 0; x < w; x++) {
-				BLOCKTYPE block = BL_EMPTY;
-				if (x == 0 || y == 0 || x == w - 1 || y == h - 1)
-					block = BL_SOLID;
-				m_mazeMaker->SetBlock(x, y, block);
-			}
-		}
-		m_mazeMaker->SetBlock(8, 8, BL_PLAYERSTART);
-		m_mazeMaker->SetBlock(5, 5, BL_END);
-	}
-	else {
-		m_mazeMaker->GenerateMaze();
-	}
+	// TODO:
+	//if (testMap)
+
+	m_maze = m_mazeMaker->GenerateMaze(w,h);
 
 	int playerX, playerY;
-	m_mazeMaker->GetPlayerStart(playerX, playerY);
+	m_maze->GetPlayerStart(playerX, playerY);
 
 	m_player = new Player();
 	// offset to the middle of the block
@@ -55,16 +43,16 @@ void MazeDemo::Init(int w, int h, bool testMap)
 	m_player->pos.y = (float)playerY + 0.5f;
 	m_player->angle = 0.0f;
 
-	m_mazeSolver = new StepwiseMazeSolver(m_mazeMaker, m_player);
+	m_mazeSolver = new StepwiseMazeSolver(m_maze.get(), m_player);
 }
 
 bool MazeDemo::CollidedWithMap(Vec2f v) {
 	int x = (int)v.x;
 	int y = (int)v.y;
-	if (x < 0 || x >= m_mazeMaker->w || y < 0 || y >= m_mazeMaker->h)
+	if (x < 0 || x >= m_maze->Width() || y < 0 || y >= m_maze->Height())
 		return true;
 
-	return m_mazeMaker->GetBlock(x, y).Type == BL_SOLID;
+	return m_maze->GetBlock(x, y).Type == BL_SOLID;
 }
 
 void MazeDemo::Update(float dt)
@@ -141,6 +129,9 @@ void MazeDemo::Render(SDL_Surface *buffer)
 {
 	SDL_FillRect(buffer, nullptr, SDL_MapRGB(buffer->format, 0, 0, 0));
 
+	// cache these because accessing smart pointers wrecks the FPS in debug mode for some reason
+	int mazeW = m_maze->Width(), mazeH = m_maze->Height();
+
 	for (int x = 0; x < buffer->w; x++) {
 		// cast a ray for each column of the screen buffer
 		// leftmost ray will be (player angle + fov/2)
@@ -163,12 +154,12 @@ void MazeDemo::Render(SDL_Surface *buffer)
 			int testY = (int)(m_player->pos.y + eye.y * distToWall);
 
 			// bounds check
-			if (testX < 0 || testY < 0 || testX >= m_mazeMaker->w || testY >= m_mazeMaker->h) {
+			if (testX < 0 || testY < 0 || testX >= mazeW || testY >= mazeH) {
 				hitWall = true;
 				distToWall = MAX_RAYDEPTH;
 				break;
 			}
-			MazeBlock block = m_mazeMaker->GetBlock(testX, testY);
+			MazeBlock block = m_maze->GetBlock(testX, testY);
 			if (block.Type == BL_SOLID) { // we've got a hit
 				hitWall = true;
 
@@ -223,6 +214,6 @@ void MazeDemo::Render(SDL_Surface *buffer)
 	}
 
 	int blockSize = 8;
-	if (m_showMiniMap)
-		RenderMazePreview(*m_mazeMaker, *m_player, buffer, blockSize);
+	/*if (m_showMiniMap)
+		RenderMazePreview(*m_mazeMaker, *m_player, buffer, blockSize);*/
 }

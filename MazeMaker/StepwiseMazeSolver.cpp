@@ -1,7 +1,7 @@
 #include "StepwiseMazeSolver.h"
 #include <SDL.h> // M_PI
 
-StepwiseMazeSolver::StepwiseMazeSolver(MazeMaker * maze, Player * player) :
+StepwiseMazeSolver::StepwiseMazeSolver(Maze * maze, Player * player) :
 	m_maze(maze),
 	m_player(player),
 	m_nextNode(0, 0),
@@ -139,8 +139,8 @@ MazeBlock StepwiseMazeSolver::GetOffsetBlock(int offX, int offY)
 	int x = m_nextNode.first + offX;
 	int y = m_nextNode.second + offY;
 
-	if (x < 0 || x >= m_maze->w ||
-		y < 0 || y >= m_maze->h)
+	if (x < 0 || x >= m_maze->Width() ||
+		y < 0 || y >= m_maze->Height())
 		return MazeBlock{ BL_SOLID }; // prevent out of bounds
 
 	return m_maze->GetBlock(x, y);

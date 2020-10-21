@@ -21,6 +21,7 @@ public:
 	int Width() { return m_w; }
 	int Height() { return m_h; }
 
+	void Clear();
 	MazeBlock GetBlock(int x, int y);
 	void SetBlock(int x, int y, BLOCKTYPE type);
 

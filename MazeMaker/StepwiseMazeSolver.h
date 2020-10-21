@@ -8,11 +8,11 @@
 class StepwiseMazeSolver : public IMazeSolver
 {
 public:
-	StepwiseMazeSolver(MazeMaker *maze, Player *player);
+	StepwiseMazeSolver(Maze *maze, Player *player);
 
 	void Update(float dt);
 private:
-	MazeMaker *m_maze;
+	Maze *m_maze;
 	Player *m_player;
 
 	void Decide();

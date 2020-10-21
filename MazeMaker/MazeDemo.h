@@ -38,9 +38,13 @@ private:
 	InputState m_inputState;
 
 	SDL_Surface *m_bricks;
-	MazeMaker *m_mazeMaker;
-	IMazeSolver *m_mazeSolver;
+
+	IMazeMaker *m_mazeMaker;
+	std::unique_ptr<Maze> m_maze;
 	Player *m_player;
+
+	IMazeSolver *m_mazeSolver;
+	
 	bool m_isFinished;
 	float m_fov;
 	bool m_fisheyeCorrection;
