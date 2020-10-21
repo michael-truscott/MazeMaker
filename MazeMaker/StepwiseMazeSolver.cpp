@@ -58,9 +58,9 @@ void StepwiseMazeSolver::Update(float dt)
 	case ST_MOVE:
 		m_player->pos.x = m_nextNode.first + 0.5f;
 		m_player->pos.y = m_nextNode.second + 0.5f;
-		auto block = m_maze->GetBlock(m_nextNode.first, m_nextNode.second);
-
-		if (block.Type == BL_END)
+		int x, y;
+		m_maze->GetEnd(x, y);
+		if (m_nextNode.first == x && m_nextNode.second == y)
 		{
 			m_state = ST_FINISHED;
 			break;

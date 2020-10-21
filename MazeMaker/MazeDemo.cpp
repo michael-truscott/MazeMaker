@@ -214,6 +214,12 @@ void MazeDemo::Render(SDL_Surface *buffer)
 		}
 	}
 
+	// draw sprites
+	auto sprites = m_maze->GetSprites();
+	for (int i = 0; i < sprites.size(); i++) {
+		// todo
+	}
+
 	int blockSize = 8;
 	if (m_showMiniMap)
 		RenderMazePreview(m_maze.get(), *m_player, buffer, blockSize);

@@ -1,14 +1,21 @@
 #pragma once
 
+#include <SDL.h>
+#include <vector>
+#include "Vec2f.h"
+
 enum BLOCKTYPE {
 	BL_EMPTY,
 	BL_SOLID,
-	BL_PLAYERSTART,
-	BL_END,
 };
 
 struct MazeBlock {
 	BLOCKTYPE Type;
+};
+
+struct Sprite {
+	Vec2f pos;
+	SDL_Surface *bitmap;
 };
 
 class Maze {
@@ -24,7 +31,17 @@ public:
 	void SetBlock(int x, int y, BLOCKTYPE type);
 
 	void GetPlayerStart(int &x, int &y);
+	void SetPlayerStart(int x, int y);
+
+	void GetEnd(int &x, int &y);
+	void SetEnd(int x, int y);
+
+	std::vector<Sprite*> &GetSprites() { return m_sprites; }
 private:
 	int m_w, m_h;
 	MazeBlock *m_blocks;
+	std::vector<Sprite*> m_sprites;
+
+	Sprite *m_start;
+	Sprite *m_end;
 };

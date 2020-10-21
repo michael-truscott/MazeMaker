@@ -83,9 +83,9 @@ std::unique_ptr<Maze> DfsMazeMaker::GenerateMaze(int w, int h)
 	
 	int x, y;
 	getRealXY(&nodes[std::rand() % numNodes], x, y);
-	maze->SetBlock(x, y, BL_PLAYERSTART);
+	maze->SetPlayerStart(x, y);
 	getRealXY(&nodes[std::rand() % numNodes], x, y);
-	maze->SetBlock(x, y, BL_END);
+	maze->SetEnd(x, y);
 	delete[] nodes;
 	return maze;
 }

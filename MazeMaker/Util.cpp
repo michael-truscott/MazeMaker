@@ -18,8 +18,6 @@ void PrintMaze(Maze *maze) {
 			switch (maze->GetBlock(x, y).Type) {
 			case BL_EMPTY: c = ' '; break;
 			case BL_SOLID: c = (char)219; break;
-			case BL_PLAYERSTART: c = 'P'; break;
-			case BL_END: c = 'X'; break;
 			}
 			std::cout << c;
 		}
@@ -37,7 +35,6 @@ void RenderMazePreview(Maze *maze, Player &player, SDL_Surface *buffer, int bloc
 			switch (block.Type) {
 			case BL_EMPTY: color = SDL_MapRGB(buffer->format, 0x00, 0x00, 0x00); break;
 			case BL_SOLID: color = SDL_MapRGB(buffer->format, 0xCC, 0xCC, 0xCC); break;
-			case BL_END: color = SDL_MapRGB(buffer->format, 0x00, 0xFF, 0x00); break;
 			default: color = SDL_MapRGB(buffer->format, 0x00, 0x00, 0x00); break;
 			}
 			SDL_Rect rect{ x*blockSize, y*blockSize, blockSize, blockSize };
@@ -45,9 +42,17 @@ void RenderMazePreview(Maze *maze, Player &player, SDL_Surface *buffer, int bloc
 		}
 	}
 
+	SDL_Rect rect;
+	// draw end block
+	Uint32 endColor = SDL_MapRGB(buffer->format, 0x00, 0xFF, 0x00);
+	int x, y;
+	maze->GetEnd(x, y);
+	rect = { x*blockSize, y*blockSize, blockSize, blockSize };
+	SDL_FillRect(buffer, &rect, endColor);
+
 	// draw player
 	Uint32 playerColour = SDL_MapRGB(buffer->format, 0xFF, 0xFF, 0x00);
-	SDL_Rect rect{ (int)((player.pos.x - 0.5f) * blockSize), (int)((player.pos.y - 0.5f) * blockSize),
+	rect = { (int)((player.pos.x - 0.5f) * blockSize), (int)((player.pos.y - 0.5f) * blockSize),
 					blockSize, blockSize };
 	SDL_FillRect(buffer, &rect, playerColour);
 

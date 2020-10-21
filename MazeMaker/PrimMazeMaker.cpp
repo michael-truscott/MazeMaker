@@ -98,12 +98,12 @@ std::unique_ptr<Maze> PrimMazeMaker::GenerateMaze(int w, int h)
 	// set a player start and end location
 	// pick random node for player start
 	Node *start = nodes[std::rand() % nodes.size()].get();
-	maze->SetBlock(start->X(), start->Y(), BL_PLAYERSTART);
+	maze->SetPlayerStart(start->X(), start->Y());
 	// pick furthest node away for end location
 	auto iterEnd = std::max_element(nodes.begin(), nodes.end(),
 		[&start](auto &lhs, auto &rhs) { return start->DistanceTo(*lhs) < start->DistanceTo(*rhs); });
 	Node *end = (*iterEnd).get();
-	maze->SetBlock(end->X(), end->Y(), BL_END);
+	maze->SetEnd(end->X(), end->Y());
 	return maze;
 }
 
