@@ -30,8 +30,6 @@ std::unique_ptr<Maze> PrimMazeMaker::GenerateMaze(int w, int h)
 	auto maze = std::make_unique<Maze>(w, h);
 
 	float density = 0.6f;
-	if (density < 0 || density > 1.0f)
-		throw std::exception("density must be between 0.0 and 1.0");
 
 	maze->Clear();
 	// force nodes to snap to 2 block grid such that all generated nodes are a multiple of 2 blocks distance from each other

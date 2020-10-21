@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cmath>
 #include "Util.h"
+#include "DfsMazeMaker.h"
 
 MazeDemo::MazeDemo() :
 	m_mazeMaker(nullptr),
@@ -27,7 +28,7 @@ MazeDemo::~MazeDemo()
 void MazeDemo::Init(int w, int h, bool testMap)
 {
 	m_bricks = SDL_LoadBMP("data/bricks.bmp");
-	m_mazeMaker = new PrimMazeMaker();
+	m_mazeMaker = new DfsMazeMaker();
 
 	// TODO:
 	//if (testMap)
