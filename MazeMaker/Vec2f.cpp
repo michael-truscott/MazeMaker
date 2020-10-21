@@ -28,7 +28,14 @@ Vec2f Vec2f::operator/(const float & f)
 
 float Vec2f::Length()
 {
-	if (x == y == 0.0f)
+	if (x == 0.0f && y == 0.0f)
 		return 0;
 	return std::sqrt(x*x + y * y);
+}
+
+void Vec2f::Normalize()
+{
+	float length = Length();
+	x /= length;
+	y /= length;
 }

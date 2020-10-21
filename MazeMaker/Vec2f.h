@@ -14,5 +14,6 @@ public:
 	Vec2f operator/(const float& f);
 
 	float Length();
+	void Normalize();
 };
 

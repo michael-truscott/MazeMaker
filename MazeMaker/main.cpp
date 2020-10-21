@@ -7,8 +7,8 @@
 
 #include "MazeDemo.h"
 
-const int MAZE_WIDTH = 21;
-const int MAZE_HEIGHT = 21;
+const int MAZE_WIDTH = 15;
+const int MAZE_HEIGHT = 15;
 const int FRAMES_PER_SEC = 60;
 const float TIME_STEP = 1.0f / FRAMES_PER_SEC;
 

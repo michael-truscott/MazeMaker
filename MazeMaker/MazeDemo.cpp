@@ -13,7 +13,8 @@ MazeDemo::MazeDemo() :
 	m_fov(DEFAULT_FOV),
 	m_fisheyeCorrection(true),
 	m_showMiniMap(true),
-	m_wallScaleFactor(DEFAULT_WALLSCALE)
+	m_wallScaleFactor(DEFAULT_WALLSCALE),
+	m_depthBuffer(nullptr)
 {
 }
 
@@ -23,6 +24,7 @@ MazeDemo::~MazeDemo()
 	delete m_mazeMaker;
 	delete m_player;
 	delete m_mazeSolver;
+	delete[] m_depthBuffer;
 }
 
 void MazeDemo::Init(int w, int h, bool testMap)
@@ -128,7 +130,13 @@ void MazeDemo::Update(float dt)
 
 void MazeDemo::Render(SDL_Surface *buffer)
 {
+	// should probs do this earlier
+	if (m_depthBuffer == nullptr)
+		m_depthBuffer = new float[buffer->w * buffer->h];
+
 	SDL_FillRect(buffer, nullptr, SDL_MapRGB(buffer->format, 0, 0, 0));
+	for (int i = 0; i < buffer->w * buffer->h; i++)
+		m_depthBuffer[i] = std::numeric_limits<float>::max();
 
 	// cache these because accessing smart pointers wrecks the FPS in debug mode for some reason
 	int mazeW = m_maze->Width(), mazeH = m_maze->Height();
@@ -207,19 +215,66 @@ void MazeDemo::Render(SDL_Surface *buffer)
 				color = SampleTexture(m_bricks, tx, ty);
 			}
 			else { // floor
-				float scale = 1.0f;
 				color = SDL_MapRGB(buffer->format, 0x95, 0xA5, 0xA6);
 			}
 			SetPixel(buffer, x, y, color);
+			m_depthBuffer[y*buffer->w + x] = distToWall;
 		}
 	}
 
 	// draw sprites
 	auto sprites = m_maze->GetSprites();
 	for (int i = 0; i < sprites.size(); i++) {
-		// todo
+		auto sprite = sprites[i];
+		Vec2f playerView = m_player->GetViewVector();
+		Vec2f dist = sprite->pos - m_player->pos;
+		float distToSprite = dist.Length();
+		if (distToSprite < 0.5f)
+			continue;
+		dist.Normalize();
+		float playerAngle = SDL_atan2f(playerView.x, -playerView.y); // internal angle might be twisted too far
+		float sAngle = SDL_atan2f(dist.x, -dist.y);
+		if (std::abs(playerAngle - sAngle) > (m_fov / 2))
+			continue;
+		
+		float minViewableAngle = playerAngle - m_fov / 2;
+		float temp = (sAngle - minViewableAngle) / m_fov; // 0 - 1.0 representing the object within the bounds of the fov
+		/*if (temp < M_PI)
+			temp += M_PI * 2;
+		if (temp > M_PI)
+			temp -= M_PI * 2;*/
+		std::cout << "temp: " << temp << std::endl;
+
+		float sTop = (buffer->h / 2) - (buffer->h / ((float)distToSprite * m_wallScaleFactor));
+		float sBottom = buffer->h - sTop;
+		float sHeight = sBottom - sTop;
+		float sAspectRatio = sprite->bitmap->h / sprite->bitmap->w;
+		float sWidth = sHeight / sAspectRatio;
+		float sMiddle = temp * buffer->w; // todo: convert sprite angle to screen space x coord
+
+		Uint32 magenta = SDL_MapRGB(sprite->bitmap->format, 0xFF, 0x00, 0xFF);
+		// scaled blit?
+		for (int x = 0; x < sWidth; x++) {
+			for (int y = 0; y < sHeight; y++) {
+				float sX = x / sWidth;
+				float sY = y / sHeight;
+				Uint32 pixel = SampleTexture(sprite->bitmap, sX, sY);
+				if (pixel == magenta)
+					continue;
+				// todo:
+				int dX = (int)sMiddle - (sWidth / 2) + x;
+				int dY = (int)sTop + y;
+				if (dX < 0 || dX >= buffer->w || dY < 0 || dY >= buffer->h)
+					continue;
+				if (distToSprite < m_depthBuffer[dY*buffer->w + dX]) {
+					SetPixel(buffer, dX, dY, pixel);
+					m_depthBuffer[dY*buffer->w + dX] = distToSprite;
+				}
+			}
+		}
 	}
 
+	// minimap
 	int blockSize = 8;
 	if (m_showMiniMap)
 		RenderMazePreview(m_maze.get(), *m_player, buffer, blockSize);

@@ -50,4 +50,5 @@ private:
 	bool m_fisheyeCorrection;
 	bool m_showMiniMap;
 	float m_wallScaleFactor;
+	float *m_depthBuffer;
 };
