@@ -7,6 +7,7 @@
 MazeDemo::MazeDemo() :
 	m_mazeMaker(nullptr),
 	m_bricks(nullptr),
+	m_mazeSolver(nullptr),
 	m_isFinished(false),
 	m_fov(DEFAULT_FOV),
 	m_fisheyeCorrection(true),
@@ -20,6 +21,7 @@ MazeDemo::~MazeDemo()
 	SDL_FreeSurface(m_bricks);
 	delete m_mazeMaker;
 	delete m_player;
+	delete m_mazeSolver;
 }
 
 void MazeDemo::Init(int w, int h, bool testMap)
@@ -52,6 +54,8 @@ void MazeDemo::Init(int w, int h, bool testMap)
 	m_player->pos.x = (float)playerX + 0.5f;
 	m_player->pos.y = (float)playerY + 0.5f;
 	m_player->angle = 0.0f;
+
+	m_mazeSolver = new StepwiseMazeSolver(m_mazeMaker, m_player);
 }
 
 bool MazeDemo::CollidedWithMap(Vec2f v) {
@@ -86,6 +90,10 @@ void MazeDemo::Update(float dt)
 
 			case SDLK_p:
 				m_showMiniMap = !m_showMiniMap;
+				break;
+
+			case SDLK_SPACE:
+				m_mazeSolver->Update(dt);
 				break;
 
 			case SDLK_w: m_inputState.forward = true; break;

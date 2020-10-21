@@ -4,7 +4,7 @@
 #include <memory>
 #include "MazeMaker.h"
 #include "Player.h"
-#include <cmath>
+#include "StepwiseMazeSolver.h"
 
 const float MOVE_SPEED = 5.0f;
 const float ROTATE_SPEED = 2.5f;
@@ -39,6 +39,7 @@ private:
 
 	SDL_Surface *m_bricks;
 	MazeMaker *m_mazeMaker;
+	StepwiseMazeSolver *m_mazeSolver;
 	Player *m_player;
 	bool m_isFinished;
 	float m_fov;

@@ -45,6 +45,7 @@ void MazeMaker::ClearMaze()
 		m_blocks[i].Type = BL_SOLID;
 }
 
+// TODO: remove possibility of loops/cycles in the graph
 void MazeMaker::GenerateMaze(float density)
 {
 	if (density < 0 || density > 1.0f)
