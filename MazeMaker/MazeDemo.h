@@ -2,9 +2,9 @@
 
 #include <SDL.h>
 #include <memory>
-#include "PrimMazeMaker.h"
+#include "IMazeMaker.h"
 #include "Player.h"
-#include "StepwiseMazeSolver.h"
+#include "IMazeSolver.h"
 
 const float MOVE_SPEED = 5.0f;
 const float ROTATE_SPEED = 2.5f;
@@ -29,6 +29,7 @@ public:
 	~MazeDemo();
 
 	void Init(int w, int h);
+	void Restart();
 	void Update(float dt);
 	void Render(SDL_Surface *buffer);
 
@@ -40,11 +41,10 @@ private:
 
 	SDL_Surface *m_bricks;
 
-	IMazeMaker *m_mazeMaker;
+	std::unique_ptr<IMazeMaker> m_mazeMaker;
 	std::unique_ptr<Maze> m_maze;
-	Player *m_player;
-
-	IMazeSolver *m_mazeSolver;
+	std::unique_ptr<Player> m_player;
+	std::unique_ptr<IMazeSolver> m_mazeSolver;
 	
 	bool m_isFinished;
 	float m_fov;
@@ -54,4 +54,6 @@ private:
 	float m_spriteScaleFactor;
 	float *m_depthBuffer;
 	bool m_flipView;
+
+	int m_mazeW, m_mazeH;
 };

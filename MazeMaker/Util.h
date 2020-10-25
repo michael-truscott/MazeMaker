@@ -1,8 +1,8 @@
 #pragma once
 
-#include "PrimMazeMaker.h"
 #include "Player.h"
 #include "Vec2f.h"
+#include "Maze.h"
 #include <SDL.h>
 
 enum RAYHIT_DIR {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PrimMazeMaker.h"
+#include "Maze.h"
 #include "Player.h"
 #include <utility>
 #include "IMazeSolver.h"
@@ -10,8 +10,12 @@ class StepwiseMazeSolver : public IMazeSolver
 public:
 	StepwiseMazeSolver(Maze *maze, Player *player);
 
-	void Update(float dt);
+	void Update(float dt) override;
+	bool ShouldRestart() override;
 private:
+	const float STEP_TIME = 0.25f;
+
+	float m_accumTime;
 	Maze *m_maze;
 	Player *m_player;
 

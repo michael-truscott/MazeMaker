@@ -5,13 +5,21 @@ StepwiseMazeSolver::StepwiseMazeSolver(Maze * maze, Player * player) :
 	m_maze(maze),
 	m_player(player),
 	m_nextNode(0, 0),
-	m_currentNode(0,0)
+	m_currentNode(0,0),
+	m_accumTime(0),
+	m_state(ST_INIT)
 {
 }
 
 // Simple "turn left at every intersection" solver
+// Stop just in front of the exit
 void StepwiseMazeSolver::Update(float dt)
 {
+	m_accumTime += dt;
+	if (m_accumTime < STEP_TIME)
+		return;
+	m_accumTime -= STEP_TIME;
+
 	auto getAngle = [](PLAYER_DIR d) {
 		return (float)(d * M_PI / 2);
 	};
@@ -29,7 +37,7 @@ void StepwiseMazeSolver::Update(float dt)
 		break;
 	case ST_DECIDE:
 		Decide();
-		Update(dt); // Skip rendering the decision steps to make it look nicer
+		Update(STEP_TIME); // Skip rendering the decision steps to make it look nicer
 		break;
 	case ST_ROTATEL:
 	{
@@ -52,7 +60,14 @@ void StepwiseMazeSolver::Update(float dt)
 		auto offset = GetOffset(m_dir);
 		if (m_currentNode.first + offset.first == m_nextNode.first &&
 			m_currentNode.second + offset.second == m_nextNode.second)
-			m_state = ST_MOVE;
+		{
+			int endX, endY;
+			m_maze->GetEnd(endX, endY);
+			if (m_nextNode.first == endX && m_nextNode.second == endY)
+				m_state = ST_FINISHED;
+			else
+				m_state = ST_MOVE;
+		}
 		break;
 	}
 	case ST_MOVE:
@@ -71,6 +86,11 @@ void StepwiseMazeSolver::Update(float dt)
 	case ST_FINISHED:
 		break;
 	}
+}
+
+bool StepwiseMazeSolver::ShouldRestart()
+{
+	return false;
 }
 
 void StepwiseMazeSolver::Decide()
@@ -92,7 +112,13 @@ void StepwiseMazeSolver::Decide()
 		m_currentNode = m_nextNode;
 		m_nextNode.first += forwardOffset.first;
 		m_nextNode.second += forwardOffset.second;
-		m_state = ST_MOVE;
+
+		int endX, endY;
+		m_maze->GetEnd(endX, endY);
+		if (m_nextNode.first == endX && m_nextNode.second == endY)
+			m_state = ST_FINISHED;
+		else
+			m_state = ST_MOVE;
 		return;
 	}
 	// is there a path to the right?

@@ -5,6 +5,7 @@
 #include "Util.h"
 #include "DfsMazeMaker.h"
 #include "TestMazeMaker.h"
+#include "RealTimeMazeSolver.h"
 
 MazeDemo::MazeDemo() :
 	m_mazeMaker(nullptr),
@@ -17,35 +18,53 @@ MazeDemo::MazeDemo() :
 	m_wallScaleFactor(DEFAULT_WALLSCALE),
 	m_spriteScaleFactor(DEFAULT_SPRITESCALE),
 	m_flipView(false),
-	m_depthBuffer(nullptr)
+	m_depthBuffer(nullptr),
+	m_mazeW(0),
+	m_mazeH(0)
 {
+	m_bricks = SDL_LoadBMP("data/bricks.bmp");
 }
 
 MazeDemo::~MazeDemo()
 {
 	SDL_FreeSurface(m_bricks);
-	delete m_mazeMaker;
-	delete m_player;
-	delete m_mazeSolver;
 	delete[] m_depthBuffer;
 }
 
 void MazeDemo::Init(int w, int h)
 {
-	m_bricks = SDL_LoadBMP("data/bricks.bmp");
-	m_mazeMaker = new DfsMazeMaker();
+	m_mazeW = w;
+	m_mazeH = h;
+	
+	m_mazeMaker = std::make_unique<DfsMazeMaker>();
 	m_maze = m_mazeMaker->GenerateMaze(w,h);
 
 	int playerX, playerY;
 	m_maze->GetPlayerStart(playerX, playerY);
 
-	m_player = new Player();
+	m_player = std::make_unique<Player>();
 	// offset to the middle of the block
 	m_player->pos.x = (float)playerX + 0.5f;
 	m_player->pos.y = (float)playerY + 0.5f;
 	m_player->angle = 0.0f;
 
-	m_mazeSolver = new StepwiseMazeSolver(m_maze.get(), m_player);
+	m_mazeSolver = std::make_unique<RealTimeMazeSolver>(m_maze.get(), m_player.get());
+}
+
+void MazeDemo::Restart()
+{
+	m_maze = m_mazeMaker->GenerateMaze(m_mazeW, m_mazeH);
+
+	int playerX, playerY;
+	m_maze->GetPlayerStart(playerX, playerY);
+
+	m_player = std::make_unique<Player>();
+	// offset to the middle of the block
+	m_player->pos.x = (float)playerX + 0.5f;
+	m_player->pos.y = (float)playerY + 0.5f;
+	m_player->angle = 0.0f;
+
+	m_mazeSolver = std::make_unique<RealTimeMazeSolver>(m_maze.get(), m_player.get());
 }
 
 bool MazeDemo::CollidedWithMap(Vec2f v) {
@@ -93,9 +112,9 @@ void MazeDemo::Update(float dt)
 				m_showMiniMap = !m_showMiniMap;
 				break;
 
-			case SDLK_SPACE:
+			/*case SDLK_SPACE:
 				m_mazeSolver->Update(dt);
-				break;
+				break;*/
 
 			case SDLK_w: m_inputState.forward = true; break;
 			case SDLK_s: m_inputState.back = true; break;
@@ -136,6 +155,10 @@ void MazeDemo::Update(float dt)
 	Vec2f newPos = m_player->pos + playerMoveDist;
 	if (!CollidedWithMap(newPos)) // very basic collision response
 		m_player->pos = newPos;
+
+	m_mazeSolver->Update(dt);
+	if (m_mazeSolver->ShouldRestart())
+		Restart();
 }
 
 void MazeDemo::Render(SDL_Surface *buffer)
@@ -223,6 +246,7 @@ void MazeDemo::Render(SDL_Surface *buffer)
 				// how far is y between wallTop and wallBottom
 				ty = (y - wallTop) / (float)(wallBottom - wallTop);
 				color = SampleTexture(m_bricks, tx, ty);
+
 			}
 			else { // floor
 				color = SDL_MapRGB(buffer->format, 0x95, 0xA5, 0xA6);
@@ -258,10 +282,6 @@ void MazeDemo::Render(SDL_Surface *buffer)
 		float xFactor = -AngleDiff(playerAngle - m_fov / 2, sAngle) / m_fov; // 0 - 1.0 representing the object's X coord within the bounds of the FOV
 		// Not really sure why this works just kinda tweaked it til it did
 		
-#ifdef _DEBUG
-		std::cout << "xFactor: " << xFactor << std::endl;
-#endif
-
 		float sHeight = 2 * (m_spriteScaleFactor * buffer->h) / (float)distToSprite;
 		float sCenterY = (buffer->h / 2) + sprite->offsetY * m_spriteScaleFactor / distToSprite;
 		float sTop = sCenterY - sHeight / 2;
@@ -271,7 +291,7 @@ void MazeDemo::Render(SDL_Surface *buffer)
 		float sMiddle = xFactor * buffer->w;
 
 		Uint32 transparent = SDL_MapRGB(sprite->bitmap->format, 0xFF, 0x00, 0xFF);
-		// scaled blit?
+		// scaled blit would be good but need to draw per-pixel to utilise depth buffer
 		for (int x = 0; x < sWidth; x++) {
 			for (int y = 0; y < sHeight; y++) {
 				float sX = x / sWidth;
