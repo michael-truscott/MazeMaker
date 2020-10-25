@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <limits>
 #include "Util.h"
 #include "DfsMazeMaker.h"
 #include "TestMazeMaker.h"
@@ -78,84 +79,6 @@ bool MazeDemo::CollidedWithMap(Vec2f v) {
 
 void MazeDemo::Update(float dt)
 {
-	SDL_Event ev;
-	while (SDL_PollEvent(&ev)) {
-		if (ev.type == SDL_QUIT) {
-			m_isFinished = true;
-			return;
-		}
-
-		if (ev.type == SDL_KEYDOWN) {
-			switch (ev.key.keysym.sym) {
-			case SDLK_ESCAPE:
-				SDL_Event quitEv;
-				quitEv.type = SDL_QUIT;
-				SDL_PushEvent(&quitEv);
-				break;
-
-			case SDLK_j:
-				m_wallScaleFactor -= 0.1f;
-				break;
-			case SDLK_k:
-				m_wallScaleFactor += 0.1f;
-				break;
-
-			case SDLK_v:
-				m_flipView = !m_flipView;
-				break;
-
-			case SDLK_f:
-				m_fisheyeCorrection = !m_fisheyeCorrection;
-				break;
-
-			case SDLK_p:
-				m_showMiniMap = !m_showMiniMap;
-				break;
-
-			/*case SDLK_SPACE:
-				m_mazeSolver->Update(dt);
-				break;*/
-
-			case SDLK_w: m_inputState.forward = true; break;
-			case SDLK_s: m_inputState.back = true; break;
-			case SDLK_q: m_inputState.strafeL = true; break;
-			case SDLK_e: m_inputState.strafeR = true; break;
-			case SDLK_a: m_inputState.rotateL = true; break;
-			case SDLK_d: m_inputState.rotateR = true; break;
-			}
-		}
-		else if (ev.type == SDL_KEYUP) {
-			switch (ev.key.keysym.sym) {
-			case SDLK_w: m_inputState.forward = false; break;
-			case SDLK_s: m_inputState.back = false; break;
-			case SDLK_q: m_inputState.strafeL = false; break;
-			case SDLK_e: m_inputState.strafeR = false; break;
-			case SDLK_a: m_inputState.rotateL = false; break;
-			case SDLK_d: m_inputState.rotateR = false; break;
-			}
-		}
-	}
-
-	if (m_inputState.rotateL)
-		m_player->angle += ROTATE_SPEED * dt;
-	if (m_inputState.rotateR)
-		m_player->angle -= ROTATE_SPEED * dt;
-
-	Vec2f playerMoveDist{ 0,0 };
-	if (m_inputState.forward)
-		playerMoveDist = m_player->GetViewVector() * (MOVE_SPEED * dt);
-	if (m_inputState.back)
-		playerMoveDist = m_player->GetViewVector() * (-MOVE_SPEED * dt);
-	if (m_inputState.strafeL)
-		playerMoveDist = m_player->GetStrafeVector() * (-MOVE_SPEED * dt);
-	if (m_inputState.strafeR)
-		playerMoveDist = m_player->GetStrafeVector() * (MOVE_SPEED * dt);
-	
-
-	Vec2f newPos = m_player->pos + playerMoveDist;
-	if (!CollidedWithMap(newPos)) // very basic collision response
-		m_player->pos = newPos;
-
 	m_mazeSolver->Update(dt);
 	if (m_mazeSolver->ShouldRestart())
 		Restart();

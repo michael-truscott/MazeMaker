@@ -86,7 +86,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;scrnsave.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -113,7 +113,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;scrnsave.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -138,6 +138,7 @@
     <ClCompile Include="MazeDemo.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="RealTimeMazeSolver.cpp" />
+    <ClCompile Include="ScreenSaver.cpp" />
     <ClCompile Include="SpanningTreeFinder.cpp" />
     <ClCompile Include="StepwiseMazeSolver.cpp" />
     <ClCompile Include="TestMazeMaker.cpp" />
@@ -148,15 +149,23 @@
     <ClInclude Include="DfsMazeMaker.h" />
     <ClInclude Include="IMazeMaker.h" />
     <ClInclude Include="IMazeSolver.h" />
+    <ClInclude Include="main.h" />
     <ClInclude Include="Maze.h" />
     <ClInclude Include="MazeDemo.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="RealTimeMazeSolver.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SpanningTreeFinder.h" />
     <ClInclude Include="StepwiseMazeSolver.h" />
     <ClInclude Include="TestMazeMaker.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="Vec2f.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="data\bricks.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

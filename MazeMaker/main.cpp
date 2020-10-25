@@ -1,86 +1,62 @@
 #pragma warning (disable : 4996)
 
 #include <iostream>
+#define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <memory>
 #include <chrono>
 
+#include "main.h"
 #include "MazeDemo.h"
-
-const int MAZE_WIDTH = 15;
-const int MAZE_HEIGHT = 15;
-const int FRAMES_PER_SEC = 60;
-const float TIME_STEP = 1.0f / FRAMES_PER_SEC;
 
 int SCREEN_WIDTH = 800;
 int SCREEN_HEIGHT = 600;
 
 static std::unique_ptr<MazeDemo> mazeDemo;
 static SDL_Surface *screenSurface;
+static SDL_Surface *drawBuffer;
 static SDL_Window *window;
 
-int main(int argc, char *argv[]);
-bool Init();
-void MainLoop();
-void Shutdown();
-
-int main(int argc, char *argv[]) {
-	if (!Init()) {
-		std::cout << "init() failed: error - " << SDL_GetError() << std::endl;
-		return 1;
-	}
-	MainLoop();
-	Shutdown();
-
-	return 0;
-}
-
-bool Init()
+bool Init(void *hWnd)
 {
+	SDL_SetMainReady();
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 		return false;
 
-	window = SDL_CreateWindow("Maze Demo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		SCREEN_WIDTH, SCREEN_HEIGHT,
-		SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindowFrom(hWnd);
+	SDL_ShowCursor(SDL_DISABLE);
 	if (!window)
 		return false;
 
 	screenSurface = SDL_GetWindowSurface(window);
 	if (!screenSurface)
 		return false;
+	SCREEN_WIDTH = screenSurface->w;
+	SCREEN_HEIGHT = screenSurface->h;
+
+	int drawWidth = 720;
+	int drawHeight = drawWidth * (float)SCREEN_HEIGHT / SCREEN_WIDTH;
+
+	drawBuffer = SDL_CreateRGBSurface(0, 800, 600, 32, 0,0,0,0);
 
 	mazeDemo = std::make_unique<MazeDemo>();
 	mazeDemo->Init(MAZE_WIDTH, MAZE_HEIGHT);
 	return true;
 }
 
-void MainLoop()
-{
-	auto prevTime = std::chrono::steady_clock::now();
-	auto curTime = std::chrono::steady_clock::now();
-	float time = 0;
-	while (!mazeDemo->IsFinished()) {
-		curTime = std::chrono::steady_clock::now();
-		float dt = std::chrono::duration<float>(curTime - prevTime).count();
-		time += dt;
-		prevTime = std::chrono::steady_clock::now();
+void Update(float dt) {
+	mazeDemo->Update(dt);
+	mazeDemo->Render(drawBuffer);
 
-		char title[50];
-		sprintf(title, "MazeMaker: %d FPS", (int)(1.0f / dt));
-		SDL_SetWindowTitle(window, title);
-
-		while (time > TIME_STEP) {
-			mazeDemo->Update(TIME_STEP);
-			time -= TIME_STEP;
-		}
-		mazeDemo->Render(screenSurface);
-		SDL_UpdateWindowSurface(window);
-	}
+	//SDL_FillRect(drawBuffer, nullptr, SDL_MapRGB(drawBuffer->format, std::rand() % 256, std::rand() % 256, std::rand() % 256));
+	SDL_BlitScaled(drawBuffer, nullptr, screenSurface, nullptr);
+	SDL_UpdateWindowSurface(window);
 }
 
 void Shutdown()
 {
+	SDL_FreeSurface(drawBuffer);
+
 	SDL_DestroyWindow(window);
 	window = nullptr;
 	screenSurface = nullptr; // auto-freed on window destroy
