@@ -14,6 +14,7 @@ LRESULT WINAPI ScreenSaverProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			PostQuitMessage(0);
 			return 0;
 		}
+		// TODO: fix framerate, feels slow
 		SetTimer(hWnd, TIMER, (int)(TIME_STEP * 1000), NULL);
 		return 0;
 	case WM_DESTROY:

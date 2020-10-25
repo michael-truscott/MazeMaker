@@ -14,7 +14,7 @@ public:
 private:
 	const float MOVE_SPEED = 5.0f;
 	const float ROTATE_SPEED = 2.5f;
-	const float TIME_TIL_RESTART = 3.0f;
+	const float TIME_TIL_RESTART = 1.0f;
 
 	Maze *m_maze;
 	Player *m_player;

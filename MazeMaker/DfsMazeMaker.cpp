@@ -3,6 +3,7 @@
 #include <unordered_set>
 #include <cstdlib>
 #include <ctime>
+#include "Vec2f.h"
 
 std::unique_ptr<Maze> DfsMazeMaker::GenerateMaze(int w, int h)
 {
@@ -81,11 +82,17 @@ std::unique_ptr<Maze> DfsMazeMaker::GenerateMaze(int w, int h)
 		stack.push(newNode);
 	}
 	
-	int x, y;
-	getRealXY(&nodes[std::rand() % numNodes], x, y);
-	maze->SetPlayerStart(x, y);
-	getRealXY(&nodes[std::rand() % numNodes], x, y);
-	maze->SetEnd(x, y);
+	int playerX, playerY;
+	getRealXY(&nodes[std::rand() % numNodes], playerX, playerY);
+	maze->SetPlayerStart(playerX, playerY);
+
+	int endX, endY;
+	int minLength = 5; // don't let exit be too close to entrance
+	do
+	{
+		getRealXY(&nodes[std::rand() % numNodes], endX, endY);
+	} while (Vec2f(endX - playerX, endY - playerY).Length() < 5);
+	maze->SetEnd(endX, endY);
 	delete[] nodes;
 	return maze;
 }

@@ -9,12 +9,12 @@ Maze::Maze(int w, int h) :
 	
 	m_blocks = new MazeBlock[w*h];
 
-	m_start = new Sprite{ {1.5f,1.5f}, SDL_LoadBMP("data/start.bmp") };
+	m_start = new Sprite{ {1.5f,1.5f}, SDL_LoadBMP("D:/ChampMaze/data/start.bmp") };
 	Uint32 magenta = SDL_MapRGB(m_start->bitmap->format, 0xFF, 0x00, 0xFF);
 	SDL_SetColorKey(m_start->bitmap, SDL_TRUE, magenta);
 	m_sprites.push_back(m_start);
 
-	m_end = new Sprite{ {w - 1.5f,h - 1.5f}, SDL_LoadBMP("data/champ.bmp"), 600.0f };
+	m_end = new Sprite{ {w - 1.5f,h - 1.5f}, SDL_LoadBMP("D:/ChampMaze/data/champ.bmp"), 600.0f };
 	SDL_SetColorKey(m_end->bitmap, SDL_TRUE, magenta);
 	m_sprites.push_back(m_end);
 }

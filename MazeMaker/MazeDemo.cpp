@@ -23,7 +23,7 @@ MazeDemo::MazeDemo() :
 	m_mazeW(0),
 	m_mazeH(0)
 {
-	m_bricks = SDL_LoadBMP("data/bricks.bmp");
+	m_bricks = SDL_LoadBMP("D:/ChampMaze/data/bricks.bmp");
 }
 
 MazeDemo::~MazeDemo()
