@@ -16,6 +16,7 @@ struct MazeBlock {
 struct Sprite {
 	Vec2f pos;
 	SDL_Surface *bitmap;
+	float offsetY;
 };
 
 class Maze {

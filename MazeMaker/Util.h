@@ -18,3 +18,4 @@ void RenderMazePreview(Maze *maze, Player &player, SDL_Surface *buffer, int bloc
 void DrawLine(Vec2f v0, Vec2f v1, SDL_Surface *image, Uint32 color);
 RAYHIT_DIR RayHitDir(Vec2f offset);
 Uint32 SampleTexture(SDL_Surface *surface, float x, float y);
+float AngleDiff(float angle1, float angle2);

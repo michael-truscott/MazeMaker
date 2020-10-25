@@ -140,6 +140,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="SpanningTreeFinder.cpp" />
     <ClCompile Include="StepwiseMazeSolver.cpp" />
+    <ClCompile Include="TestMazeMaker.cpp" />
     <ClCompile Include="Util.cpp" />
     <ClCompile Include="Vec2f.cpp" />
   </ItemGroup>
@@ -153,6 +154,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="SpanningTreeFinder.h" />
     <ClInclude Include="StepwiseMazeSolver.h" />
+    <ClInclude Include="TestMazeMaker.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="Vec2f.h" />
   </ItemGroup>

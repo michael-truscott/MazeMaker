@@ -4,6 +4,7 @@
 #include <cmath>
 #include "Util.h"
 #include "DfsMazeMaker.h"
+#include "TestMazeMaker.h"
 
 MazeDemo::MazeDemo() :
 	m_mazeMaker(nullptr),
@@ -14,6 +15,8 @@ MazeDemo::MazeDemo() :
 	m_fisheyeCorrection(true),
 	m_showMiniMap(true),
 	m_wallScaleFactor(DEFAULT_WALLSCALE),
+	m_spriteScaleFactor(DEFAULT_SPRITESCALE),
+	m_flipView(false),
 	m_depthBuffer(nullptr)
 {
 }
@@ -27,14 +30,10 @@ MazeDemo::~MazeDemo()
 	delete[] m_depthBuffer;
 }
 
-void MazeDemo::Init(int w, int h, bool testMap)
+void MazeDemo::Init(int w, int h)
 {
 	m_bricks = SDL_LoadBMP("data/bricks.bmp");
 	m_mazeMaker = new DfsMazeMaker();
-
-	// TODO:
-	//if (testMap)
-
 	m_maze = m_mazeMaker->GenerateMaze(w,h);
 
 	int playerX, playerY;
@@ -73,6 +72,17 @@ void MazeDemo::Update(float dt)
 				SDL_Event quitEv;
 				quitEv.type = SDL_QUIT;
 				SDL_PushEvent(&quitEv);
+				break;
+
+			case SDLK_j:
+				m_wallScaleFactor -= 0.1f;
+				break;
+			case SDLK_k:
+				m_wallScaleFactor += 0.1f;
+				break;
+
+			case SDLK_v:
+				m_flipView = !m_flipView;
 				break;
 
 			case SDLK_f:
@@ -200,7 +210,7 @@ void MazeDemo::Render(SDL_Surface *buffer)
 			}
 		}
 
-		int wallTop = (int)((float)(buffer->h) / 2 - buffer->h / ((float)distToWall * m_wallScaleFactor));
+		int wallTop = (int)((float)(buffer->h) / 2 - (m_wallScaleFactor * buffer->h) / ((float)distToWall));
 		int wallBottom = buffer->h - wallTop;
 
 		// draw the column
@@ -217,7 +227,10 @@ void MazeDemo::Render(SDL_Surface *buffer)
 			else { // floor
 				color = SDL_MapRGB(buffer->format, 0x95, 0xA5, 0xA6);
 			}
-			SetPixel(buffer, x, y, color);
+			if (m_flipView)
+				SetPixel(buffer, buffer->w - 1 - x, buffer->h - 1 - y, color);
+			else
+				SetPixel(buffer, x, y, color);
 			m_depthBuffer[y*buffer->w + x] = distToWall;
 		}
 	}
@@ -234,40 +247,47 @@ void MazeDemo::Render(SDL_Surface *buffer)
 		dist.Normalize();
 		float playerAngle = SDL_atan2f(playerView.x, -playerView.y); // internal angle might be twisted too far
 		float sAngle = SDL_atan2f(dist.x, -dist.y);
-		if (std::abs(playerAngle - sAngle) > (m_fov / 2))
+		float angleDiff = AngleDiff(playerAngle, sAngle);
+		if (std::abs(angleDiff) > (m_fov / 2))
 			continue;
 		
+		// fisheye compensation necessary?
+		if (m_fisheyeCorrection)
+			distToSprite *= SDL_cosf(std::abs(angleDiff));
 		float minViewableAngle = playerAngle - m_fov / 2;
-		float temp = (sAngle - minViewableAngle) / m_fov; // 0 - 1.0 representing the object within the bounds of the fov
-		/*if (temp < M_PI)
-			temp += M_PI * 2;
-		if (temp > M_PI)
-			temp -= M_PI * 2;*/
-		std::cout << "temp: " << temp << std::endl;
+		float xFactor = -AngleDiff(playerAngle - m_fov / 2, sAngle) / m_fov; // 0 - 1.0 representing the object's X coord within the bounds of the FOV
+		// Not really sure why this works just kinda tweaked it til it did
+		
+#ifdef _DEBUG
+		std::cout << "xFactor: " << xFactor << std::endl;
+#endif
 
-		float sTop = (buffer->h / 2) - (buffer->h / ((float)distToSprite * m_wallScaleFactor));
-		float sBottom = buffer->h - sTop;
-		float sHeight = sBottom - sTop;
+		float sHeight = 2 * (m_spriteScaleFactor * buffer->h) / (float)distToSprite;
+		float sCenterY = (buffer->h / 2) + sprite->offsetY * m_spriteScaleFactor / distToSprite;
+		float sTop = sCenterY - sHeight / 2;
+		float sBottom = sCenterY + sHeight / 2;
 		float sAspectRatio = sprite->bitmap->h / sprite->bitmap->w;
 		float sWidth = sHeight / sAspectRatio;
-		float sMiddle = temp * buffer->w; // todo: convert sprite angle to screen space x coord
+		float sMiddle = xFactor * buffer->w;
 
-		Uint32 magenta = SDL_MapRGB(sprite->bitmap->format, 0xFF, 0x00, 0xFF);
+		Uint32 transparent = SDL_MapRGB(sprite->bitmap->format, 0xFF, 0x00, 0xFF);
 		// scaled blit?
 		for (int x = 0; x < sWidth; x++) {
 			for (int y = 0; y < sHeight; y++) {
 				float sX = x / sWidth;
 				float sY = y / sHeight;
 				Uint32 pixel = SampleTexture(sprite->bitmap, sX, sY);
-				if (pixel == magenta)
+				if (pixel == transparent)
 					continue;
-				// todo:
 				int dX = (int)sMiddle - (sWidth / 2) + x;
 				int dY = (int)sTop + y;
 				if (dX < 0 || dX >= buffer->w || dY < 0 || dY >= buffer->h)
 					continue;
 				if (distToSprite < m_depthBuffer[dY*buffer->w + dX]) {
-					SetPixel(buffer, dX, dY, pixel);
+					if (m_flipView)
+						SetPixel(buffer, buffer->w - 1 - dX, buffer->h - 1 - dY, pixel);
+					else
+						SetPixel(buffer, dX, dY, pixel);
 					m_depthBuffer[dY*buffer->w + dX] = distToSprite;
 				}
 			}

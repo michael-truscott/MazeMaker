@@ -10,7 +10,8 @@ const float MOVE_SPEED = 5.0f;
 const float ROTATE_SPEED = 2.5f;
 const float MAX_RAYDEPTH = 64.0f;
 const float DEFAULT_FOV = (float)M_PI / 3.0f;
-const float DEFAULT_WALLSCALE = 2.0f;
+const float DEFAULT_WALLSCALE = 0.5f;
+const float DEFAULT_SPRITESCALE = 0.3f;
 
 struct InputState {
 	bool forward;
@@ -27,7 +28,7 @@ public:
 	MazeDemo();
 	~MazeDemo();
 
-	void Init(int w, int h, bool testMap = false);
+	void Init(int w, int h);
 	void Update(float dt);
 	void Render(SDL_Surface *buffer);
 
@@ -50,5 +51,7 @@ private:
 	bool m_fisheyeCorrection;
 	bool m_showMiniMap;
 	float m_wallScaleFactor;
+	float m_spriteScaleFactor;
 	float *m_depthBuffer;
+	bool m_flipView;
 };

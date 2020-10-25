@@ -118,3 +118,25 @@ Uint32 SampleTexture(SDL_Surface * surface, float x, float y)
 	// bilinear filtering?
 	return ((Uint32*)surface->pixels)[sY * surface->w + sX];
 }
+
+// The smallest signed difference between 2 angles in radians
+float AngleDiff(float angle1, float angle2)
+{
+	// normalize angles to [0,2*PI)
+	if (angle1 < 0)
+		angle1 += 2 * M_PI;
+	if (angle1 >= 2 * M_PI)
+		angle1 -= 2 * M_PI;
+	if (angle2 < 0)
+		angle2 += 2 * M_PI;
+	if (angle2 >= 2 * M_PI)
+		angle2 -= 2 * M_PI;
+	
+	// there is probably a better way of doing this
+	float result = angle1 - angle2;
+	if (result < 0)
+		result += 2 * M_PI;
+	if (result > M_PI)
+		result -= 2 * M_PI;
+	return result;
+}

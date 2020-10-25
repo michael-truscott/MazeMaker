@@ -14,7 +14,7 @@ Maze::Maze(int w, int h) :
 	SDL_SetColorKey(m_start->bitmap, SDL_TRUE, magenta);
 	m_sprites.push_back(m_start);
 
-	m_end = new Sprite{ {w - 1.5f,h - 1.5f}, SDL_LoadBMP("data/end.bmp") };
+	m_end = new Sprite{ {w - 1.5f,h - 1.5f}, SDL_LoadBMP("data/champ.bmp"), 600.0f };
 	SDL_SetColorKey(m_end->bitmap, SDL_TRUE, magenta);
 	m_sprites.push_back(m_end);
 }

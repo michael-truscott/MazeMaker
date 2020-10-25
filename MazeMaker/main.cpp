@@ -51,7 +51,7 @@ bool Init()
 		return false;
 
 	mazeDemo = std::make_unique<MazeDemo>();
-	mazeDemo->Init(MAZE_WIDTH, MAZE_HEIGHT, false);
+	mazeDemo->Init(MAZE_WIDTH, MAZE_HEIGHT);
 	return true;
 }
 
