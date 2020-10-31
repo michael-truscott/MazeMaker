@@ -32,6 +32,7 @@ public:
 	void Restart();
 	void Update(float dt);
 	void Render(SDL_Surface *buffer);
+	void Render(SDL_Renderer *buffer);
 
 	bool IsFinished() { return m_isFinished; }
 

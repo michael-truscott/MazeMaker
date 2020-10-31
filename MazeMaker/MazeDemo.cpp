@@ -242,3 +242,126 @@ void MazeDemo::Render(SDL_Surface *buffer)
 	if (m_showMiniMap)
 		RenderMazePreview(m_maze.get(), *m_player, buffer, blockSize);
 }
+
+void MazeDemo::Render(SDL_Renderer *buffer)
+{
+	int bufferW, bufferH;
+	SDL_GetRendererOutputSize(buffer, &bufferW, &bufferH);
+	// should probs do this earlier
+	if (m_depthBuffer == nullptr) {
+		m_depthBuffer = new float[bufferW * bufferH];
+		std::cout << "bufferW: " << bufferW << ", bufferH: " << bufferH << std::endl;
+	}
+
+	SDL_SetRenderDrawColor(buffer, 0, 0, 0, 255);
+	SDL_RenderFillRect(buffer, NULL);
+	for (int i = 0; i < bufferW * bufferH; i++)
+		m_depthBuffer[i] = std::numeric_limits<float>::max();
+
+	// draw ceiling
+	SDL_Color color;
+	SDL_Rect rect;
+	color = { 0xFF, 0xAF, 0x41, 0xFF };
+	rect = { 0,0, bufferW, bufferH / 2 - 10 };
+	SDL_SetRenderDrawColor(buffer, color.r, color.g, color.b, color.a);
+	SDL_RenderFillRect(buffer, &rect);
+	// draw floor
+	color = { 0x95, 0xA5, 0xA6, 0xFF };
+	rect = { 0,bufferH / 2 + 10, bufferW, bufferH - (bufferH / 2 + 10) };
+	SDL_SetRenderDrawColor(buffer, color.r, color.g, color.b, color.a);
+	SDL_RenderFillRect(buffer, &rect);
+
+	// cache these because accessing smart pointers wrecks the FPS in debug mode for some reason
+	int mazeW = m_maze->Width(), mazeH = m_maze->Height();
+
+	for (int x = 0; x < bufferW; x++) {
+		// cast a ray for each column of the screen buffer
+		// leftmost ray will be (player angle + fov/2)
+		// rightmost ray will be (player angle - fov/2)
+		float columnRatio = (float)x / bufferW;
+		float rayAngle = (m_player->angle + m_fov / 2) - columnRatio * m_fov;
+
+		bool hitWall = false;
+		float distToWall = 0;
+		float tx = 0, ty = 0;
+
+		Vec2f eye = Vec2f{ SDL_cosf(rayAngle), -SDL_sinf(rayAngle) };
+		bool odd = false;
+
+		// get distance to wall for this column's ray
+		while (!hitWall && distToWall < MAX_RAYDEPTH) {
+			distToWall += 0.01f; // todo: speed up by only testing on guaranteed x/y intercepts (i.e. wolf3d)
+
+			int testX = (int)(m_player->pos.x + eye.x * distToWall);
+			int testY = (int)(m_player->pos.y + eye.y * distToWall);
+
+			// bounds check
+			if (testX < 0 || testY < 0 || testX >= mazeW || testY >= mazeH) {
+				hitWall = true;
+				distToWall = MAX_RAYDEPTH;
+				break;
+			}
+			MazeBlock block = m_maze->GetBlock(testX, testY);
+			if (block.Type == BL_SOLID) { // we've got a hit
+				hitWall = true;
+
+				// Get texture sample x coord
+				Vec2f blockMid(testX + 0.5f, testY + 0.5f);
+				Vec2f testPoint = m_player->pos + (eye * distToWall);
+				Vec2f offset = testPoint - blockMid;
+				switch (RayHitDir(offset)) {
+				case RH_TOP:
+					tx = testPoint.x - testX;
+					break;
+				case RH_BOTTOM:
+					tx = 1.0f - (testPoint.x - testX);
+					break;
+				case RH_LEFT:
+					tx = testPoint.y - testY;
+					break;
+				case RH_RIGHT:
+					tx = 1.0f - (testPoint.y - testY);
+					break;
+				}
+
+				// correct for fisheye at larger fovs
+				float theta = std::abs(rayAngle - m_player->angle);
+				if (m_fisheyeCorrection) {
+					float correction = SDL_cosf(theta);
+					distToWall *= correction;
+				}
+			}
+		}
+
+		int wallTop = (int)((float)(bufferH) / 2 - (m_wallScaleFactor * bufferH) / ((float)distToWall));
+		int wallBottom = bufferH - wallTop;
+
+		for (int y = 0; y < bufferH; y++) {
+			if (y <= wallTop) { // ceiling
+				continue;
+			}
+			else if (y > wallTop && y <= wallBottom) { // wall
+				// how far is y between wallTop and wallBottom
+				ty = (y - wallTop) / (float)(wallBottom - wallTop);
+				color = SampleTexture2(m_bricks, tx, ty);
+			}
+			else { // floor
+				continue;
+			}
+
+			if (m_flipView) {
+				SDL_SetRenderDrawColor(buffer, color.r, color.g, color.b, color.a);
+				SDL_RenderDrawPoint(buffer, bufferW - 1 - x, bufferH - 1 - y);
+			}
+			else {
+				SDL_SetRenderDrawColor(buffer, color.r, color.g, color.b, color.a);
+				SDL_RenderDrawPoint(buffer, x, y);
+			}
+			m_depthBuffer[y*bufferW + x] = distToWall;
+		}
+	}
+
+	// todo: sprites
+
+	// todo: minimap
+}

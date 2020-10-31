@@ -119,6 +119,18 @@ Uint32 SampleTexture(SDL_Surface * surface, float x, float y)
 	return ((Uint32*)surface->pixels)[sY * surface->w + sX];
 }
 
+SDL_Color SampleTexture2(SDL_Surface * surface, float x, float y)
+{
+	// should probs fix for bitmaps with less than 32 bpp
+	int sX = (int)((surface->w - 1) * SDL_fmodf(x, 1.0f));
+	int sY = (int)((surface->h - 1) * SDL_fmodf(y, 1.0f));
+
+	Uint32 pixel = ((Uint32*)surface->pixels)[sY * surface->w + sX];
+	SDL_Color col;
+	SDL_GetRGBA(pixel, surface->format, &col.r, &col.g, &col.b, &col.a);
+	return col;
+}
+
 // The smallest signed difference between 2 angles in radians
 float AngleDiff(float angle1, float angle2)
 {
