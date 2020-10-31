@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cmath>
 #include <limits>
+#include <algorithm>
 #include "Util.h"
 #include "DfsMazeMaker.h"
 #include "TestMazeMaker.h"
@@ -21,7 +22,9 @@ MazeDemo::MazeDemo() :
 	m_flipView(false),
 	m_depthBuffer(nullptr),
 	m_mazeW(0),
-	m_mazeH(0)
+	m_mazeH(0),
+	m_state(ST_START),
+	m_stateChangeAfter(0.0f)
 {
 	m_bricks = SDL_LoadBMP("D:/ChampMaze/data/bricks.bmp");
 }
@@ -50,6 +53,9 @@ void MazeDemo::Init(int w, int h)
 	m_player->angle = 0.0f;
 
 	m_mazeSolver = std::make_unique<RealTimeMazeSolver>(m_maze.get(), m_player.get());
+
+	m_state = ST_START;
+	m_stateChangeAfter = WALL_GROW_TIME;
 }
 
 void MazeDemo::Restart()
@@ -66,6 +72,9 @@ void MazeDemo::Restart()
 	m_player->angle = 0.0f;
 
 	m_mazeSolver = std::make_unique<RealTimeMazeSolver>(m_maze.get(), m_player.get());
+
+	m_state = ST_START;
+	m_stateChangeAfter = WALL_GROW_TIME;
 }
 
 bool MazeDemo::CollidedWithMap(Vec2f v) {
@@ -77,11 +86,77 @@ bool MazeDemo::CollidedWithMap(Vec2f v) {
 	return m_maze->GetBlock(x, y).Type == BL_SOLID;
 }
 
+bool MazeDemo::HitRock(float dt)
+{
+	// todo: add actual rocks to test with
+	/*static bool hitOnce = false;
+
+	if (!hitOnce && (int)m_player->pos.x == 3)
+	{
+		hitOnce = true;
+		return true;
+	}*/
+	return false;
+}
+
+bool MazeDemo::HitExit(float dt)
+{
+	float dist = dt * MOVE_SPEED;
+	Vec2f view = m_player->GetViewVector();
+
+	Vec2f nextPos = m_player->pos + (view * dist);
+	int endX, endY;
+	m_maze->GetEnd(endX, endY);
+	return ((int)nextPos.x == endX && (int)nextPos.y == endY);
+}
+
 void MazeDemo::Update(float dt)
 {
-	m_mazeSolver->Update(dt);
-	if (m_mazeSolver->ShouldRestart())
-		Restart();
+	switch (m_state) {
+	case ST_START:
+	case ST_WALLGROW:
+		// make walls grow then start running
+		m_stateChangeAfter -= dt;
+		m_wallScaleFactor = (WALL_GROW_TIME - m_stateChangeAfter) * DEFAULT_WALLSCALE;
+		if (m_stateChangeAfter <= 0.0f) {
+			m_wallScaleFactor = DEFAULT_WALLSCALE;
+			m_state = ST_RUNNING;
+		}
+		break;
+	case ST_RUNNING:
+		// run frame
+		m_mazeSolver->Update(dt);
+		// did we hit a rock or something to make us flip?
+		if (HitRock(dt)) {
+			m_stateChangeAfter = WALL_GROW_TIME;
+			m_state = ST_WALLSHRINK;
+			break;
+		}
+		// are we within range of the exit? stop moving, schedule a restart
+		if (HitExit(dt)) {
+			m_stateChangeAfter = TIME_TIL_RESTART;
+			m_state = ST_FINISHED;
+			break;
+		}
+		break;
+	case ST_WALLSHRINK:
+		// TODO: test
+		m_stateChangeAfter -= dt;
+		m_wallScaleFactor = (m_stateChangeAfter) * DEFAULT_WALLSCALE;
+		if (m_stateChangeAfter <= 0.0f) {
+			m_flipView = !m_flipView;
+			m_wallScaleFactor = 0.01f;
+			m_stateChangeAfter = WALL_GROW_TIME;
+			m_state = ST_WALLGROW;
+		}
+		break;
+	case ST_FINISHED:
+		// restart once the time runs out
+		m_stateChangeAfter -= dt;
+		if (m_stateChangeAfter <= 0.0f)
+			Restart();
+		break;
+	}
 }
 
 void MazeDemo::Render(SDL_Surface *buffer)

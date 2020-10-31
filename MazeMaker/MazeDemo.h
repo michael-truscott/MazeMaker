@@ -12,6 +12,8 @@ const float MAX_RAYDEPTH = 64.0f;
 const float DEFAULT_FOV = (float)M_PI / 3.0f;
 const float DEFAULT_WALLSCALE = 0.5f;
 const float DEFAULT_SPRITESCALE = 0.3f;
+const float WALL_GROW_TIME = 1.0f;
+const float TIME_TIL_RESTART = 1.0f;
 
 struct InputState {
 	bool forward;
@@ -45,6 +47,9 @@ private:
 	std::unique_ptr<Maze> m_maze;
 	std::unique_ptr<Player> m_player;
 	std::unique_ptr<IMazeSolver> m_mazeSolver;
+
+	bool HitRock(float dt);
+	bool HitExit(float dt);
 	
 	bool m_isFinished;
 	float m_fov;
@@ -56,4 +61,14 @@ private:
 	bool m_flipView;
 
 	int m_mazeW, m_mazeH;
+
+	enum DemoState {
+		ST_START,
+		ST_RUNNING,
+		ST_WALLSHRINK,
+		ST_WALLGROW,
+		ST_FINISHED,
+	};
+	DemoState m_state;
+	float m_stateChangeAfter;
 };

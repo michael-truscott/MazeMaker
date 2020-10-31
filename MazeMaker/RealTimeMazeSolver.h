@@ -9,7 +9,6 @@ class RealTimeMazeSolver : public IMazeSolver
 public:
 	RealTimeMazeSolver(Maze *maze, Player *player);
 	void Update(float dt) override;
-	bool ShouldRestart() override;
 
 private:
 	const float MOVE_SPEED = 5.0f;
@@ -22,7 +21,6 @@ private:
 	float m_angleToRotate;
 
 	float m_restartCountdown;
-	bool m_shouldRestart;
 
 	void Decide();
 
