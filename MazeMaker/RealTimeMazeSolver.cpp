@@ -18,8 +18,6 @@ void RealTimeMazeSolver::Update(float dt)
 	switch (m_state) {
 	case ST_INIT:
 	{
-		// look east
-		m_player->angle = 0;
 		m_state = ST_DECIDE;
 		break;
 	}

@@ -59,6 +59,15 @@ void MazeDemo::Restart()
 	m_player->pos.y = (float)playerY + 0.5f;
 	m_player->angle = 0.0f;
 
+	// Rotate the player until they're not facing a wall
+	for (int i = 0; i < 3; i++) {
+		Vec2f viewPos = m_player->pos + m_player->GetViewVector();
+		MazeBlock block = m_maze->GetBlock((int)viewPos.x, (int)viewPos.y);
+		if (block.Type == BL_EMPTY)
+			break;
+		m_player->angle += M_PI / 2;
+	}
+
 	m_mazeSolver = std::make_unique<RealTimeMazeSolver>(m_maze.get(), m_player.get());
 
 	m_state = ST_START;
@@ -180,6 +189,16 @@ void MazeDemo::Render(SDL_Surface *buffer)
 	for (int i = 0; i < buffer->w * buffer->h; i++)
 		m_depthBuffer[i] = std::numeric_limits<float>::max();
 
+	RenderMaze(buffer);
+	RenderSprites(buffer);
+
+	// minimap
+	int blockSize = 8;
+	if (m_showMiniMap)
+		RenderMazePreview(m_maze.get(), *m_player, buffer, blockSize);
+}
+
+void MazeDemo::RenderMaze(SDL_Surface *buffer) {
 	// cache these because accessing smart pointers wrecks the FPS in debug mode for some reason
 	int mazeW = m_maze->Width(), mazeH = m_maze->Height();
 
@@ -267,7 +286,9 @@ void MazeDemo::Render(SDL_Surface *buffer)
 			m_depthBuffer[y*buffer->w + x] = distToWall;
 		}
 	}
+}
 
+void MazeDemo::RenderSprites(SDL_Surface *buffer) {
 	// draw sprites
 	auto sprites = m_maze->GetSprites();
 	for (int i = 0; i < sprites.size(); i++) {
@@ -285,14 +306,14 @@ void MazeDemo::Render(SDL_Surface *buffer)
 		float angleDiff = AngleDiff(playerAngle, sAngle);
 		if (std::abs(angleDiff) > (m_fov / 2))
 			continue;
-		
+
 		// fisheye compensation necessary?
 		if (m_fisheyeCorrection)
 			distToSprite *= SDL_cosf(std::abs(angleDiff));
 		float minViewableAngle = playerAngle - m_fov / 2;
 		float xFactor = -AngleDiff(playerAngle - m_fov / 2, sAngle) / m_fov; // 0 - 1.0 representing the object's X coord within the bounds of the FOV
 		// Not really sure why this works just kinda tweaked it til it did
-		
+
 		float sHeight = 2 * (m_spriteScaleFactor * buffer->h) / (float)distToSprite;
 		float sCenterY = (buffer->h / 2) + sprite->offsetY * m_spriteScaleFactor / distToSprite;
 		float sTop = sCenterY - sHeight / 2;
@@ -324,9 +345,4 @@ void MazeDemo::Render(SDL_Surface *buffer)
 			}
 		}
 	}
-
-	// minimap
-	int blockSize = 8;
-	if (m_showMiniMap)
-		RenderMazePreview(m_maze.get(), *m_player, buffer, blockSize);
 }
