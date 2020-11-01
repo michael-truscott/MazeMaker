@@ -17,6 +17,7 @@ struct Sprite {
 	Vec2f pos;
 	SDL_Surface *bitmap;
 	float offsetY;
+	bool removed;
 };
 
 class Maze {
@@ -37,11 +38,16 @@ public:
 	void GetEnd(int &x, int &y);
 	void SetEnd(int x, int y);
 
+	void AddObstacle(int x, int y);
+	void RemoveObstacle(Sprite *ob);
+
 	std::vector<Sprite*> &GetSprites() { return m_sprites; }
+	std::vector<Sprite*> &GetObstacles() { return m_obstacles; }
 private:
 	int m_w, m_h;
 	MazeBlock *m_blocks;
 	std::vector<Sprite*> m_sprites;
+	std::vector<Sprite*> m_obstacles;
 
 	Sprite *m_start;
 	Sprite *m_end;

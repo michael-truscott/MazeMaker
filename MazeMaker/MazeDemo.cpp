@@ -24,7 +24,8 @@ MazeDemo::MazeDemo() :
 	m_mazeW(0),
 	m_mazeH(0),
 	m_state(ST_START),
-	m_stateChangeAfter(0.0f)
+	m_stateChangeAfter(0.0f),
+	m_rockToDelete(nullptr)
 {
 	m_bricks = SDL_LoadBMP("D:/ChampMaze/data/bricks.bmp");
 }
@@ -41,21 +42,8 @@ void MazeDemo::Init(int w, int h)
 	m_mazeH = h;
 	
 	m_mazeMaker = std::make_unique<DfsMazeMaker>();
-	m_maze = m_mazeMaker->GenerateMaze(w,h);
 
-	int playerX, playerY;
-	m_maze->GetPlayerStart(playerX, playerY);
-
-	m_player = std::make_unique<Player>();
-	// offset to the middle of the block
-	m_player->pos.x = (float)playerX + 0.5f;
-	m_player->pos.y = (float)playerY + 0.5f;
-	m_player->angle = 0.0f;
-
-	m_mazeSolver = std::make_unique<RealTimeMazeSolver>(m_maze.get(), m_player.get());
-
-	m_state = ST_START;
-	m_stateChangeAfter = WALL_GROW_TIME;
+	Restart();
 }
 
 void MazeDemo::Restart()
@@ -75,6 +63,7 @@ void MazeDemo::Restart()
 
 	m_state = ST_START;
 	m_stateChangeAfter = WALL_GROW_TIME;
+	m_flipView = false;
 }
 
 bool MazeDemo::CollidedWithMap(Vec2f v) {
@@ -86,17 +75,17 @@ bool MazeDemo::CollidedWithMap(Vec2f v) {
 	return m_maze->GetBlock(x, y).Type == BL_SOLID;
 }
 
-bool MazeDemo::HitRock(float dt)
+Sprite* MazeDemo::HitRock(float dt)
 {
-	// todo: add actual rocks to test with
-	/*static bool hitOnce = false;
-
-	if (!hitOnce && (int)m_player->pos.x == 3)
-	{
-		hitOnce = true;
-		return true;
-	}*/
-	return false;
+	auto obstacles = m_maze->GetObstacles();
+	for (auto ob : obstacles) {
+		Vec2f dist = m_player->pos - ob->pos;
+		if (dist.Length() < 0.8f) {
+			return ob;
+		}
+	}
+	
+	return nullptr;
 }
 
 bool MazeDemo::HitExit(float dt)
@@ -124,10 +113,17 @@ void MazeDemo::Update(float dt)
 		}
 		break;
 	case ST_RUNNING:
+	{
+		if (m_rockToDelete) {
+			m_maze->RemoveObstacle(m_rockToDelete);
+			m_rockToDelete = nullptr;
+		}
 		// run frame
 		m_mazeSolver->Update(dt);
 		// did we hit a rock or something to make us flip?
-		if (HitRock(dt)) {
+		Sprite *rock = HitRock(dt);
+		if (rock) {
+			m_rockToDelete = rock;
 			m_stateChangeAfter = WALL_GROW_TIME;
 			m_state = ST_WALLSHRINK;
 			break;
@@ -139,6 +135,7 @@ void MazeDemo::Update(float dt)
 			break;
 		}
 		break;
+	}
 	case ST_WALLSHRINK:
 		// TODO: test
 		m_stateChangeAfter -= dt;
@@ -261,6 +258,8 @@ void MazeDemo::Render(SDL_Surface *buffer)
 	auto sprites = m_maze->GetSprites();
 	for (int i = 0; i < sprites.size(); i++) {
 		auto sprite = sprites[i];
+		if (sprite->removed)
+			continue;
 		Vec2f playerView = m_player->GetViewVector();
 		Vec2f dist = sprite->pos - m_player->pos;
 		float distToSprite = dist.Length();

@@ -93,6 +93,13 @@ std::unique_ptr<Maze> DfsMazeMaker::GenerateMaze(int w, int h)
 		getRealXY(&nodes[std::rand() % numNodes], endX, endY);
 	} while (Vec2f(endX - playerX, endY - playerY).Length() < 5);
 	maze->SetEnd(endX, endY);
+
+	// testing: add obstacles
+	maze->AddObstacle(1, 1);
+	maze->AddObstacle(1, h - 2);
+	maze->AddObstacle(w-2, 1);
+	maze->AddObstacle(w-2, h-2);
+
 	delete[] nodes;
 	return maze;
 }

@@ -48,7 +48,7 @@ private:
 	std::unique_ptr<Player> m_player;
 	std::unique_ptr<IMazeSolver> m_mazeSolver;
 
-	bool HitRock(float dt);
+	Sprite* HitRock(float dt);
 	bool HitExit(float dt);
 	
 	bool m_isFinished;
@@ -71,4 +71,5 @@ private:
 	};
 	DemoState m_state;
 	float m_stateChangeAfter;
+	Sprite *m_rockToDelete;
 };
