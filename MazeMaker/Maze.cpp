@@ -75,7 +75,7 @@ void Maze::SetEnd(int x, int y)
 
 void Maze::AddObstacle(int x, int y)
 {
-	Sprite *ob = new Sprite{ {x + 0.5f,y+0.5f}, SDL_LoadBMP("D:/ChampMaze/data/champ.bmp"), 300.0f, false };
+	Sprite *ob = new Sprite{ {x + 0.5f,y+0.5f}, SDL_LoadBMP("D:/ChampMaze/data/reverse.bmp"), 300.0f, false };
 	Uint32 magenta = SDL_MapRGB(ob->bitmap->format, 0xFF, 0x00, 0xFF);
 	SDL_SetColorKey(ob->bitmap, SDL_TRUE, magenta);
 	m_sprites.push_back(ob);
