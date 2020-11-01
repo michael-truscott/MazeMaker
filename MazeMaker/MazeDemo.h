@@ -38,6 +38,9 @@ public:
 	bool IsFinished() { return m_isFinished; }
 
 private:
+	void RenderMaze(SDL_Surface *buffer, float *depthBuffer);
+	void RenderSprites(SDL_Surface *buffer, float *depthBuffer);
+
 	bool CollidedWithMap(Vec2f v);
 	InputState m_inputState;
 

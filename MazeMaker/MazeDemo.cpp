@@ -297,7 +297,7 @@ void MazeDemo::Render(SDL_Surface *buffer)
 		float sCenterY = (buffer->h / 2) + sprite->offsetY * m_spriteScaleFactor / distToSprite;
 		float sTop = sCenterY - sHeight / 2;
 		float sBottom = sCenterY + sHeight / 2;
-		float sAspectRatio = sprite->bitmap->h / sprite->bitmap->w;
+		float sAspectRatio = (float)sprite->bitmap->h / sprite->bitmap->w;
 		float sWidth = sHeight / sAspectRatio;
 		float sMiddle = xFactor * buffer->w;
 
