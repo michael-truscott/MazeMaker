@@ -52,14 +52,14 @@ void RenderMazePreview(Maze *maze, Player &player, SDL_Surface *buffer, int bloc
 
 	// draw player
 	Uint32 playerColour = SDL_MapRGB(buffer->format, 0xFF, 0xFF, 0x00);
-	rect = { (int)((player.pos.x - 0.5f) * blockSize), (int)((player.pos.y - 0.5f) * blockSize),
+	rect = { (int)(std::roundf(player.pos.x - 0.5f) * blockSize), (int)(std::roundf(player.pos.y - 0.5f) * blockSize),
 					blockSize, blockSize };
 	SDL_FillRect(buffer, &rect, playerColour);
 
 	// draw player view
 	Vec2f view = player.GetViewVector();
 	Vec2f v0 = player.pos * blockSize;
-	Vec2f v1 = (player.pos + view * 2.0f) * blockSize;
+	Vec2f v1 = (player.pos + view * 1.5f) * blockSize;
 	if (v1.x < 1) v1.x = 1;
 	if (v1.y < 1) v1.y = 1;
 	DrawLine(v0, v1, buffer, playerColour);

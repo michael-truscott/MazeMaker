@@ -5,24 +5,16 @@
 #include <memory>
 #include <chrono>
 
+#include "main.h"
 #include "MazeDemo.h"
-
-const int MAZE_WIDTH = 15;
-const int MAZE_HEIGHT = 15;
-const int FRAMES_PER_SEC = 60;
-const float TIME_STEP = 1.0f / FRAMES_PER_SEC;
 
 int SCREEN_WIDTH = 800;
 int SCREEN_HEIGHT = 600;
 
 static std::unique_ptr<MazeDemo> mazeDemo;
 static SDL_Surface *screenSurface;
+static SDL_Surface *drawBuffer;
 static SDL_Window *window;
-
-int main(int argc, char *argv[]);
-bool Init();
-void MainLoop();
-void Shutdown();
 
 int main(int argc, char *argv[]) {
 	if (!Init()) {
@@ -50,6 +42,11 @@ bool Init()
 	if (!screenSurface)
 		return false;
 
+	int drawWidth = 720;
+	int drawHeight = drawWidth * (float)SCREEN_HEIGHT / SCREEN_WIDTH;
+
+	drawBuffer = SDL_CreateRGBSurface(0, 800, 600, 32, 0,0,0,0);
+
 	mazeDemo = std::make_unique<MazeDemo>();
 	mazeDemo->Init(MAZE_WIDTH, MAZE_HEIGHT);
 	return true;
@@ -71,7 +68,7 @@ void MainLoop()
 		SDL_SetWindowTitle(window, title);
 
 		while (time > TIME_STEP) {
-			mazeDemo->Update(TIME_STEP);
+			Update(dt);
 			time -= TIME_STEP;
 		}
 		mazeDemo->Render(screenSurface);
@@ -79,8 +76,15 @@ void MainLoop()
 	}
 }
 
+void Update(float dt)
+{
+	mazeDemo->Update(TIME_STEP);
+}
+
 void Shutdown()
 {
+	SDL_FreeSurface(drawBuffer);
+
 	SDL_DestroyWindow(window);
 	window = nullptr;
 	screenSurface = nullptr; // auto-freed on window destroy

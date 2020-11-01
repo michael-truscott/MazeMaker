@@ -148,15 +148,23 @@
     <ClInclude Include="DfsMazeMaker.h" />
     <ClInclude Include="IMazeMaker.h" />
     <ClInclude Include="IMazeSolver.h" />
+    <ClInclude Include="main.h" />
     <ClInclude Include="Maze.h" />
     <ClInclude Include="MazeDemo.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="RealTimeMazeSolver.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SpanningTreeFinder.h" />
     <ClInclude Include="StepwiseMazeSolver.h" />
     <ClInclude Include="TestMazeMaker.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="Vec2f.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="data\bricks.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

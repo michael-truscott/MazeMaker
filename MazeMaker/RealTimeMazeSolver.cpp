@@ -8,7 +8,6 @@ RealTimeMazeSolver::RealTimeMazeSolver(Maze * maze, Player * player) :
 	m_state(ST_INIT),
 	m_distToMove(0),
 	m_angleToRotate(0),
-	m_shouldRestart(false),
 	m_restartCountdown(0)
 {
 
@@ -57,7 +56,6 @@ void RealTimeMazeSolver::Update(float dt)
 	}
 	case ST_MOVE:
 	{
-		// TODO: go to ST_FINISHED if within 1 unit of the exit
 		float amount = dt * MOVE_SPEED;
 		amount = std::min(amount, m_distToMove);
 		Vec2f view = m_player->GetViewVector();
@@ -83,18 +81,9 @@ void RealTimeMazeSolver::Update(float dt)
 	}
 	case ST_FINISHED:
 	{
-		if (m_restartCountdown <= 0)
-			m_shouldRestart = true;
-		else
-			m_restartCountdown -= dt;
 		break;
 	}
 	}
-}
-
-bool RealTimeMazeSolver::ShouldRestart()
-{
-	return m_shouldRestart;
 }
 
 void RealTimeMazeSolver::Decide()
@@ -112,17 +101,8 @@ void RealTimeMazeSolver::Decide()
 	auto forwardOffset = GetOffset(pDir);
 	if (GetOffsetBlock(forwardOffset.first, forwardOffset.second).Type != BL_SOLID)
 	{
-		int endX, endY;
-		m_maze->GetEnd(endX, endY);
-		if (forwardOffset.first == endX && forwardOffset.second == endY) {
-			std::cout << "A winner is you!" << std::endl;
-			m_restartCountdown = TIME_TIL_RESTART;
-			m_state = ST_FINISHED;
-		}
-		else {
-			m_distToMove = 1.0f;
-			m_state = ST_MOVE;
-		}
+		m_distToMove = 1.0f;
+		m_state = ST_MOVE;
 		return;
 	}
 	// is there a path to the right?

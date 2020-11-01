@@ -88,11 +88,6 @@ void StepwiseMazeSolver::Update(float dt)
 	}
 }
 
-bool StepwiseMazeSolver::ShouldRestart()
-{
-	return false;
-}
-
 void StepwiseMazeSolver::Decide()
 {
 	// is there a path to the left?

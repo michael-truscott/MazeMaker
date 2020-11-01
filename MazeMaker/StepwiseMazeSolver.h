@@ -11,7 +11,6 @@ public:
 	StepwiseMazeSolver(Maze *maze, Player *player);
 
 	void Update(float dt) override;
-	bool ShouldRestart() override;
 private:
 	const float STEP_TIME = 0.25f;
 
