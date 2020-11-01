@@ -50,6 +50,16 @@ void RenderMazePreview(Maze *maze, Player &player, SDL_Surface *buffer, int bloc
 	rect = { x*blockSize, y*blockSize, blockSize, blockSize };
 	SDL_FillRect(buffer, &rect, endColor);
 
+	// draw reverse cards
+	auto obstacles = maze->GetObstacles();
+	Uint32 obColor = SDL_MapRGB(buffer->format, 0x00, 0x00, 0xFF);
+	for (auto ob : obstacles) {
+		if (ob->removed)
+			continue;
+		rect = { (int)ob->pos.x * blockSize, (int)ob->pos.y * blockSize, blockSize, blockSize };
+		SDL_FillRect(buffer, &rect, obColor);
+	}
+
 	// draw player
 	Uint32 playerColour = SDL_MapRGB(buffer->format, 0xFF, 0xFF, 0x00);
 	rect = { (int)(std::roundf(player.pos.x - 0.5f) * blockSize), (int)(std::roundf(player.pos.y - 0.5f) * blockSize),
