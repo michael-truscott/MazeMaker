@@ -117,8 +117,30 @@ void MazeDemo::Update(float dt)
 			m_isFinished = true;
 			break;
 		case SDL_KEYDOWN:
-			if (ev.key.keysym.sym == SDLK_ESCAPE) {
-				m_isFinished = true;
+			switch (ev.key.keysym.sym) {
+			case SDLK_ESCAPE:
+				SDL_Event quitEv;
+				quitEv.type = SDL_QUIT;
+				SDL_PushEvent(&quitEv);
+				break;
+
+			// player movement
+			case SDLK_w: m_inputState.forward = true; break;
+			case SDLK_s: m_inputState.back = true; break;
+			case SDLK_q: m_inputState.strafeL = true; break;
+			case SDLK_e: m_inputState.strafeR = true; break;
+			case SDLK_a: m_inputState.rotateL = true; break;
+			case SDLK_d: m_inputState.rotateR = true; break;
+			}
+			break;
+		case SDL_KEYUP:
+			switch (ev.key.keysym.sym) {
+			case SDLK_w: m_inputState.forward = false; break;
+			case SDLK_s: m_inputState.back = false; break;
+			case SDLK_q: m_inputState.strafeL = false; break;
+			case SDLK_e: m_inputState.strafeR = false; break;
+			case SDLK_a: m_inputState.rotateL = false; break;
+			case SDLK_d: m_inputState.rotateR = false; break;
 			}
 			break;
 		}
@@ -143,6 +165,9 @@ void MazeDemo::Update(float dt)
 		}
 		// run frame
 		m_mazeSolver->Update(dt);
+		//MovePlayer(dt);
+
+
 		// did we hit a rock or something to make us flip?
 		Sprite *rock = HitRock(dt);
 		if (rock) {
@@ -179,6 +204,41 @@ void MazeDemo::Update(float dt)
 	}
 }
 
+void MazeDemo::MovePlayer(float dt) {
+	if (m_inputState.rotateL)
+		m_player->angle += ROTATE_SPEED * dt;
+	if (m_inputState.rotateR)
+		m_player->angle -= ROTATE_SPEED * dt;
+
+	Vec2f playerMoveDist{ 0,0 };
+	if (m_inputState.forward)
+		playerMoveDist = m_player->GetViewVector() * (MOVE_SPEED * dt);
+	if (m_inputState.back)
+		playerMoveDist = m_player->GetViewVector() * (-MOVE_SPEED * dt);
+	if (m_inputState.strafeL)
+		playerMoveDist = m_player->GetStrafeVector() * (-MOVE_SPEED * dt);
+	if (m_inputState.strafeR)
+		playerMoveDist = m_player->GetStrafeVector() * (MOVE_SPEED * dt);
+
+
+	// TODO: AABB collision?
+	Vec2f newPos = m_player->pos + playerMoveDist;
+	if (!CollidedWithMap(newPos)) {
+		m_player->pos = newPos;
+		return;
+	}
+	newPos = Vec2f(m_player->pos.x + playerMoveDist.x, m_player->pos.y); // slide along y axis
+	if (!CollidedWithMap(newPos)) {
+		m_player->pos = newPos;
+		return;
+	}
+	newPos = Vec2f(m_player->pos.x, m_player->pos.y + playerMoveDist.y); // slide along x axis
+	if (!CollidedWithMap(newPos)) {
+		m_player->pos = newPos;
+		return;
+	}
+}
+
 void MazeDemo::Render(SDL_Surface *buffer)
 {
 	// should probs do this earlier
@@ -186,8 +246,8 @@ void MazeDemo::Render(SDL_Surface *buffer)
 		m_depthBuffer = new float[buffer->w * buffer->h];
 
 	SDL_FillRect(buffer, nullptr, SDL_MapRGB(buffer->format, 0, 0, 0));
-	for (int i = 0; i < buffer->w * buffer->h; i++)
-		m_depthBuffer[i] = std::numeric_limits<float>::max();
+	float fMax = std::numeric_limits<float>::max();
+	std::fill_n(m_depthBuffer, buffer->w * buffer->h, fMax);
 
 	RenderMaze(buffer);
 	RenderSprites(buffer);
@@ -198,10 +258,90 @@ void MazeDemo::Render(SDL_Surface *buffer)
 		RenderMazePreview(m_maze.get(), *m_player, buffer, blockSize);
 }
 
-void MazeDemo::RenderMaze(SDL_Surface *buffer) {
-	// cache these because accessing smart pointers wrecks the FPS in debug mode for some reason
-	int mazeW = m_maze->Width(), mazeH = m_maze->Height();
+void MazeDemo::TraceRay(const Vec2f pos, const float rayAngle, float &distToWall, float &tx, bool &xSide) {
+	// more efficient algorithm based on https://lodev.org/cgtutor/raycasting.html
+	bool hitWall = false;
+	distToWall = 0;
+	tx = 0;
 
+	int mazeX = (int)pos.x;
+	int mazeY = (int)pos.y;
+
+	Vec2f eye = Vec2f{ SDL_cosf(rayAngle), -SDL_sinf(rayAngle) };
+	// the distance between each x/y grid line intercept
+	float deltaX = (eye.y == 0) ? 0 : ((eye.x == 0) ? 1 : std::abs(1 / eye.x));
+	float deltaY = (eye.x == 0) ? 0 : ((eye.y == 0) ? 1 : std::abs(1 / eye.y));
+
+	int stepX, stepY;
+	float xDist, yDist;
+	if (eye.x > 0) { // facing right
+		xDist = (1 - (pos.x - mazeX)) * deltaX;
+		stepX = 1;
+	}
+	else { // left
+		xDist = (pos.x - mazeX) * deltaX;
+		stepX = -1;
+	}
+	if (eye.y > 0) { // facing down (south)
+		yDist = (1 - (pos.y - mazeY)) * deltaY;
+		stepY = 1;
+	}
+	else { // up (north)
+		yDist = (pos.y - mazeY) * deltaY;
+		stepY = -1;
+	}
+
+	Vec2f testX = (eye * xDist) + pos;
+	Vec2f testY = (eye * yDist) + pos;
+	while (!hitWall) {
+		if (xDist < yDist) {
+			xDist += deltaX;
+			mazeX += stepX;
+			xSide = true;
+		}
+		else {
+			yDist += deltaY;
+			mazeY += stepY;
+			xSide = false;
+		}
+
+		if (m_maze->GetBlock(mazeX, mazeY).Type == BL_SOLID) {
+			hitWall = true;
+			// get distance between ray hit and the camera plane
+			if (xSide)
+				distToWall = (mazeX - pos.x + (1 - stepX) / 2) / eye.x;
+			else
+				distToWall = (mazeY - pos.y + (1 - stepY) / 2) / eye.y;
+
+			// Get texture sample x coord
+			Vec2f blockMid(mazeX + 0.5f, mazeY + 0.5f);
+			Vec2f testPoint = m_player->pos + (eye * distToWall);
+			Vec2f offset = testPoint - blockMid;
+			switch (RayHitDir(offset)) {
+			case RH_TOP:
+				tx = testPoint.x - mazeX;
+				break;
+			case RH_BOTTOM:
+				tx = 1.0f - (testPoint.x - mazeX);
+				break;
+			case RH_LEFT:
+				tx = testPoint.y - mazeY;
+				break;
+			case RH_RIGHT:
+				tx = 1.0f - (testPoint.y - mazeY);
+				break;
+			}
+
+			if (m_fisheyeCorrection) {
+				float theta = std::abs(rayAngle - m_player->angle);
+				float correction = SDL_cosf(theta);
+				distToWall *= correction;
+			}
+		}
+	}
+}
+
+void MazeDemo::RenderMaze(SDL_Surface *buffer) {
 	for (int x = 0; x < buffer->w; x++) {
 		// cast a ray for each column of the screen buffer
 		// leftmost ray will be (player angle + fov/2)
@@ -209,57 +349,9 @@ void MazeDemo::RenderMaze(SDL_Surface *buffer) {
 		float columnRatio = (float)x / buffer->w;
 		float rayAngle = (m_player->angle + m_fov / 2) - columnRatio * m_fov;
 
-		bool hitWall = false;
-		float distToWall = 0;
-		float tx = 0, ty = 0;
-
-		Vec2f eye = Vec2f{ SDL_cosf(rayAngle), -SDL_sinf(rayAngle) };
-		bool odd = false;
-
-		// get distance to wall for this column's ray
-		while (!hitWall && distToWall < MAX_RAYDEPTH) {
-			distToWall += 0.01f; // todo: speed up by only testing on guaranteed x/y intercepts (i.e. wolf3d)
-
-			int testX = (int)(m_player->pos.x + eye.x * distToWall);
-			int testY = (int)(m_player->pos.y + eye.y * distToWall);
-
-			// bounds check
-			if (testX < 0 || testY < 0 || testX >= mazeW || testY >= mazeH) {
-				hitWall = true;
-				distToWall = MAX_RAYDEPTH;
-				break;
-			}
-			MazeBlock block = m_maze->GetBlock(testX, testY);
-			if (block.Type == BL_SOLID) { // we've got a hit
-				hitWall = true;
-
-				// Get texture sample x coord
-				Vec2f blockMid(testX + 0.5f, testY + 0.5f);
-				Vec2f testPoint = m_player->pos + (eye * distToWall);
-				Vec2f offset = testPoint - blockMid;
-				switch (RayHitDir(offset)) {
-				case RH_TOP:
-					tx = testPoint.x - testX;
-					break;
-				case RH_BOTTOM:
-					tx = 1.0f - (testPoint.x - testX);
-					break;
-				case RH_LEFT:
-					tx = testPoint.y - testY;
-					break;
-				case RH_RIGHT:
-					tx = 1.0f - (testPoint.y - testY);
-					break;
-				}
-
-				// correct for fisheye at larger fovs
-				float theta = std::abs(rayAngle - m_player->angle);
-				if (m_fisheyeCorrection) {
-					float correction = SDL_cosf(theta);
-					distToWall *= correction;
-				}
-			}
-		}
+		float distToWall, tx, ty;
+		bool xSide;
+		TraceRay(m_player->pos, rayAngle, distToWall, tx, xSide);
 
 		int wallTop = (int)((float)(buffer->h) / 2 - (m_wallScaleFactor * buffer->h) / ((float)distToWall));
 		int wallBottom = buffer->h - wallTop;
