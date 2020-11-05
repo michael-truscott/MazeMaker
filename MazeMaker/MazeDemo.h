@@ -38,9 +38,11 @@ public:
 	bool IsFinished() { return m_isFinished; }
 
 private:
+	void TraceRay(const Vec2f pos, const float rayAngle, float &distToWall, float &tx, bool &xSide);
 	void RenderMaze(SDL_Surface *buffer);
 	void RenderSprites(SDL_Surface *buffer);
 
+	void MovePlayer(float dt);
 	bool CollidedWithMap(Vec2f v);
 	InputState m_inputState;
 
