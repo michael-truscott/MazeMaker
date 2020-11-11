@@ -1,5 +1,5 @@
 # MazeMaker
-A random maze generator/solver with simple Wolf3D style raycasting visualisation & sprite display, featuring the irrepressible Champ.
+A random maze generator/solver with simple "Wolfenstein 3D" style raycasting visualisation & sprite display, featuring the irrepressible Champ.
 Inspired by the classic Windows 95 3D Maze screensaver.
 
 Screenshots:
