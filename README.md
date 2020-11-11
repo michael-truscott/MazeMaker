@@ -4,6 +4,10 @@ Inspired by the classic Windows 95 3D Maze screensaver.
 
 Screenshots:
 
+<img src="https://github.com/pickleyeah/MazeMaker/blob/master/docs/maze1.png" width="400">
+<img src="https://github.com/pickleyeah/MazeMaker/blob/master/docs/maze2.png" width="400">
+<img src="https://github.com/pickleyeah/MazeMaker/blob/master/docs/maze3.png" width="400">
+
 Video demo:
 https://youtu.be/8hdRSxfoyuQ
 
