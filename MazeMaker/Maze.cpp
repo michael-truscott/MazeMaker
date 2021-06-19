@@ -23,7 +23,7 @@ Maze::~Maze()
 {
 	delete[] m_blocks;
 	// TODO: handle memory less ugly
-	for (int i = 0; i < m_sprites.size(); i++) {
+	for (size_t i = 0; i < m_sprites.size(); i++) {
 		SDL_FreeSurface(m_sprites[i]->bitmap);
 		delete m_sprites[i];
 	}
@@ -57,8 +57,8 @@ void Maze::GetPlayerStart(int & x, int & y)
 
 void Maze::SetPlayerStart(int x, int y)
 {
-	m_start->pos.x = x + 0.5;
-	m_start->pos.y = y + 0.5;
+	m_start->pos.x = x + 0.5f;
+	m_start->pos.y = y + 0.5f;
 }
 
 void Maze::GetEnd(int & x, int & y)

@@ -26,6 +26,16 @@ Vec2f Vec2f::operator/(const float & f)
 	return Vec2f(x / f, y / f);
 }
 
+Vec2f Vec2f::operator*(const int& i)
+{
+	return Vec2f(x * i, y * i);
+}
+
+Vec2f Vec2f::operator/(const int& i)
+{
+	return Vec2f(x / i, y / i);
+}
+
 float Vec2f::Length()
 {
 	if (x == 0.0f && y == 0.0f)

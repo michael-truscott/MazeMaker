@@ -33,7 +33,7 @@ std::unique_ptr<Maze> DfsMazeMaker::GenerateMaze(int w, int h)
 	}
 	
 	auto getNeighbour = [nodes, eW, eH](DfsNode* n, WALL dir) {
-		int nX, nY;
+		int nX = 0, nY = 0;
 		switch (dir) {
 		case WALL::WALL_N: nX = n->x; nY = n->y - 1; break;
 		case WALL::WALL_E: nX = n->x + 1; nY = n->y; break;
@@ -111,7 +111,7 @@ std::unique_ptr<Maze> DfsMazeMaker::GenerateMaze(int w, int h)
 	{
 		getRealXY(&nodes[std::rand() % numNodes], endX, endY);
 		// don't let exit be too close to entrance, or on top of an obstacle
-	} while (Vec2f(endX - playerX, endY - playerY).Length() < 5 ||
+	} while (Vec2f((float)(endX - playerX), (float)(endY - playerY)).Length() < 5 ||
 		std::find_if(obstacles.begin(), obstacles.end(), [&endX, &endY](auto& ob)
 			{
 				return ob.first == endX && ob.second == endY;

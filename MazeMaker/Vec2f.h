@@ -13,6 +13,9 @@ public:
 	Vec2f operator*(const float& f);
 	Vec2f operator/(const float& f);
 
+	Vec2f operator*(const int& i);
+	Vec2f operator/(const int& i);
+
 	float Length();
 	void Normalize();
 };

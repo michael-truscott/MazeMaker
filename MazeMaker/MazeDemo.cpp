@@ -25,7 +25,8 @@ MazeDemo::MazeDemo() :
 	m_mazeH(0),
 	m_state(DemoState::ST_START),
 	m_stateChangeAfter(0.0f),
-	m_rockToDelete(nullptr)
+	m_rockToDelete(nullptr),
+	m_inputState()
 {
 	m_bricks = SDL_LoadBMP("D:/ChampMaze/data/bricks.bmp");
 }
@@ -65,7 +66,7 @@ void MazeDemo::Restart()
 		MazeBlock block = m_maze->GetBlock((int)viewPos.x, (int)viewPos.y);
 		if (block.Type == BLOCKTYPE::BL_EMPTY)
 			break;
-		m_player->angle += M_PI / 2;
+		m_player->angle += (float)(M_PI / 2);
 	}
 
 	m_mazeSolver = std::make_unique<RealTimeMazeSolver>(m_maze.get(), m_player.get());
@@ -210,8 +211,7 @@ void MazeDemo::Render(SDL_Surface *buffer)
 		m_depthBuffer = new float[buffer->w * buffer->h];
 
 	SDL_FillRect(buffer, nullptr, SDL_MapRGB(buffer->format, 0, 0, 0));
-	float fMax = std::numeric_limits<float>::max();
-	std::fill_n(m_depthBuffer, buffer->w * buffer->h, fMax);
+	std::fill_n(m_depthBuffer, buffer->w * buffer->h, std::numeric_limits<float>::max());
 
 	RenderMaze(buffer);
 	RenderSprites(buffer);
@@ -347,7 +347,7 @@ void MazeDemo::RenderMaze(SDL_Surface *buffer) {
 void MazeDemo::RenderSprites(SDL_Surface *buffer) {
 	// draw sprites
 	auto sprites = m_maze->GetSprites();
-	for (int i = 0; i < sprites.size(); i++) {
+	for (size_t i = 0; i < sprites.size(); i++) {
 		auto sprite = sprites[i];
 		if (sprite->removed)
 			continue;
@@ -387,7 +387,7 @@ void MazeDemo::RenderSprites(SDL_Surface *buffer) {
 				Uint32 pixel = SampleTexture(sprite->bitmap, sX, sY);
 				if (pixel == transparent)
 					continue;
-				int dX = (int)sMiddle - (sWidth / 2) + x;
+				int dX = (int)sMiddle - (int)(sWidth / 2) + x;
 				int dY = (int)sTop + y;
 				if (dX < 0 || dX >= buffer->w || dY < 0 || dY >= buffer->h)
 					continue;

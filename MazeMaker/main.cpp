@@ -35,7 +35,7 @@ bool Init(void *hWnd)
 	SCREEN_HEIGHT = screenSurface->h;
 
 	int drawWidth = 720;
-	int drawHeight = drawWidth * (float)SCREEN_HEIGHT / SCREEN_WIDTH;
+	int drawHeight = (int)(drawWidth * (float)SCREEN_HEIGHT / SCREEN_WIDTH);
 
 	drawBuffer = SDL_CreateRGBSurface(0, 800, 600, 32, 0,0,0,0);
 

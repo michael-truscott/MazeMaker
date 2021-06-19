@@ -23,7 +23,7 @@ private:
 	std::pair<int, int> m_nextNode;
 	std::pair<int, int> m_currentNode;
 
-	enum PLAYER_DIR {
+	enum class PLAYER_DIR {
 		DIR_EAST,
 		DIR_NORTH,
 		DIR_WEST,
@@ -34,7 +34,7 @@ private:
 	std::pair<int, int> GetOffset(PLAYER_DIR d);
 	MazeBlock GetOffsetBlock(int offX, int offY);
 
-	enum SOLVER_STATE {
+	enum class SOLVER_STATE {
 		ST_INIT,
 		ST_DECIDE,
 		ST_ROTATEL,

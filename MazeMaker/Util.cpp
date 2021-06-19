@@ -133,20 +133,21 @@ Uint32 SampleTexture(SDL_Surface * surface, float x, float y)
 float AngleDiff(float angle1, float angle2)
 {
 	// normalize angles to [0,2*PI)
+	constexpr float twoPI = (float)(2 * M_PI);
 	if (angle1 < 0)
-		angle1 += 2 * M_PI;
-	if (angle1 >= 2 * M_PI)
-		angle1 -= 2 * M_PI;
+		angle1 += twoPI;
+	if (angle1 >= twoPI)
+		angle1 -= twoPI;
 	if (angle2 < 0)
-		angle2 += 2 * M_PI;
-	if (angle2 >= 2 * M_PI)
-		angle2 -= 2 * M_PI;
+		angle2 += twoPI;
+	if (angle2 >= twoPI)
+		angle2 -= twoPI;
 	
 	// there is probably a better way of doing this
 	float result = angle1 - angle2;
 	if (result < 0)
-		result += 2 * M_PI;
-	if (result > M_PI)
-		result -= 2 * M_PI;
+		result += twoPI;
+	if (result > (float)M_PI)
+		result -= twoPI;
 	return result;
 }

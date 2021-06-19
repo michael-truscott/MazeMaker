@@ -5,10 +5,11 @@
 RealTimeMazeSolver::RealTimeMazeSolver(Maze * maze, Player * player) :
 	m_maze(maze),
 	m_player(player),
-	m_state(ST_INIT),
+	m_state(SOLVER_STATE::ST_INIT),
 	m_distToMove(0),
 	m_angleToRotate(0),
-	m_restartCountdown(0)
+	m_restartCountdown(0),
+	m_dir()
 {
 
 }
@@ -16,17 +17,17 @@ RealTimeMazeSolver::RealTimeMazeSolver(Maze * maze, Player * player) :
 void RealTimeMazeSolver::Update(float dt)
 {
 	switch (m_state) {
-	case ST_INIT:
+	case SOLVER_STATE::ST_INIT:
 	{
-		m_state = ST_DECIDE;
+		m_state = SOLVER_STATE::ST_DECIDE;
 		break;
 	}
-	case ST_DECIDE:
+	case SOLVER_STATE::ST_DECIDE:
 	{
 		Decide();
 		break;
 	}
-	case ST_ROTATEL:
+	case SOLVER_STATE::ST_ROTATEL:
 	{
 		float amount = dt * ROTATE_SPEED;
 		amount = std::min(amount, m_angleToRotate);
@@ -35,11 +36,11 @@ void RealTimeMazeSolver::Update(float dt)
 		if (m_angleToRotate <= 0)
 		{
 			m_distToMove = 1.0f;
-			m_state = ST_MOVE;
+			m_state = SOLVER_STATE::ST_MOVE;
 		}
 		break;
 	}
-	case ST_ROTATER:
+	case SOLVER_STATE::ST_ROTATER:
 	{
 		float amount = dt * ROTATE_SPEED;
 		amount = std::min(amount, m_angleToRotate);
@@ -48,11 +49,11 @@ void RealTimeMazeSolver::Update(float dt)
 		if (m_angleToRotate <= 0)
 		{
 			m_distToMove = 1.0f;
-			m_state = ST_MOVE;
+			m_state = SOLVER_STATE::ST_MOVE;
 		}
 		break;
 	}
-	case ST_MOVE:
+	case SOLVER_STATE::ST_MOVE:
 	{
 		float amount = dt * MOVE_SPEED;
 		amount = std::min(amount, m_distToMove);
@@ -64,7 +65,7 @@ void RealTimeMazeSolver::Update(float dt)
 		if ((int)nextPos.x == endX && (int)nextPos.y == endY) {
 			std::cout << "A winner is you!" << std::endl;
 			m_restartCountdown = TIME_TIL_RESTART;
-			m_state = ST_FINISHED;
+			m_state = SOLVER_STATE::ST_FINISHED;
 			break;
 		}
 
@@ -73,11 +74,11 @@ void RealTimeMazeSolver::Update(float dt)
 		m_distToMove -= amount;
 		if (m_distToMove <= 0)
 		{
-			m_state = ST_DECIDE;
+			m_state = SOLVER_STATE::ST_DECIDE;
 		}
 		break;
 	}
-	case ST_FINISHED:
+	case SOLVER_STATE::ST_FINISHED:
 	{
 		break;
 	}
@@ -88,11 +89,11 @@ void RealTimeMazeSolver::Decide()
 {
 	PLAYER_DIR pDir = GetPlayerDir();
 	// is there a path to the left?
-	auto leftOffset = GetOffset((PLAYER_DIR)((pDir + 1) % 4));
+	auto leftOffset = GetOffset((PLAYER_DIR)(((int)pDir + 1) % 4));
 	if (GetOffsetBlock(leftOffset.first, leftOffset.second).Type != BLOCKTYPE::BL_SOLID)
 	{
-		m_angleToRotate = M_PI / 2;
-		m_state = ST_ROTATEL;
+		m_angleToRotate = (float)(M_PI / 2);
+		m_state = SOLVER_STATE::ST_ROTATEL;
 		return;
 	}
 	// is there a path ahead?
@@ -100,23 +101,23 @@ void RealTimeMazeSolver::Decide()
 	if (GetOffsetBlock(forwardOffset.first, forwardOffset.second).Type != BLOCKTYPE::BL_SOLID)
 	{
 		m_distToMove = 1.0f;
-		m_state = ST_MOVE;
+		m_state = SOLVER_STATE::ST_MOVE;
 		return;
 	}
 	// is there a path to the right?
-	auto dir = (PLAYER_DIR)(pDir - 1);
-	if (dir == -1) dir = DIR_SOUTH;
+	int dirInt = (int)pDir - 1;
+	PLAYER_DIR dir = (dirInt == -1) ? PLAYER_DIR::DIR_SOUTH : (PLAYER_DIR)dirInt;
 	auto rightOffset = GetOffset(dir);
 	if (GetOffsetBlock(rightOffset.first, rightOffset.second).Type != BLOCKTYPE::BL_SOLID)
 	{
-		m_angleToRotate = M_PI / 2;
-		m_state = ST_ROTATER;
+		m_angleToRotate = (float)(M_PI / 2);
+		m_state = SOLVER_STATE::ST_ROTATER;
 		return;
 	}
 
 	// neither, need to turn around
-	m_angleToRotate = M_PI;
-	m_state = ST_ROTATEL;
+	m_angleToRotate = (float)M_PI;
+	m_state = SOLVER_STATE::ST_ROTATEL;
 }
 
 RealTimeMazeSolver::PLAYER_DIR RealTimeMazeSolver::GetPlayerDir()
@@ -125,26 +126,26 @@ RealTimeMazeSolver::PLAYER_DIR RealTimeMazeSolver::GetPlayerDir()
 	float angle = SDL_atan2f(view.x, view.y) - ((float)M_PI / 4);
 	if (angle < 0.0f) angle += (float)(2 * M_PI); // Put in the range [0,2*PI)
 
-	if (angle >= 0.0f && angle < M_PI / 2) return DIR_EAST;
-	else if (angle >= M_PI / 2 && angle < M_PI) return DIR_NORTH;
-	else if (angle >= M_PI && angle < 3 * M_PI / 2) return DIR_WEST;
-	else return DIR_SOUTH;
+	if (angle >= 0.0f && angle < M_PI / 2) return PLAYER_DIR::DIR_EAST;
+	else if (angle >= M_PI / 2 && angle < M_PI) return PLAYER_DIR::DIR_NORTH;
+	else if (angle >= M_PI && angle < 3 * M_PI / 2) return PLAYER_DIR::DIR_WEST;
+	else return PLAYER_DIR::DIR_SOUTH;
 }
 
 std::pair<int, int> RealTimeMazeSolver::GetOffset(PLAYER_DIR d)
 {
 	int offX, offY;
 	switch (d) {
-	case DIR_EAST:
+	case PLAYER_DIR::DIR_EAST:
 		offX = 1; offY = 0;
 		break;
-	case DIR_NORTH:
+	case PLAYER_DIR::DIR_NORTH:
 		offX = 0; offY = -1;
 		break;
-	case DIR_WEST:
+	case PLAYER_DIR::DIR_WEST:
 		offX = -1; offY = 0;
 		break;
-	case DIR_SOUTH:
+	case PLAYER_DIR::DIR_SOUTH:
 		offX = 0; offY = 1;
 		break;
 	}

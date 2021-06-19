@@ -24,7 +24,7 @@ private:
 
 	void Decide();
 
-	enum SOLVER_STATE {
+	enum class SOLVER_STATE {
 		ST_INIT,
 		ST_DECIDE, // pick next destination, set up move/rotation amount
 		ST_ROTATEL, // rotate left by m_angleToRotate radians, then start moving forward again
@@ -35,7 +35,7 @@ private:
 
 	SOLVER_STATE m_state;
 
-	enum PLAYER_DIR {
+	enum class PLAYER_DIR {
 		DIR_EAST,
 		DIR_NORTH,
 		DIR_WEST,
