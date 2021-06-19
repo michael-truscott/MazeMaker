@@ -8,9 +8,9 @@ std::unique_ptr<Maze> TestMazeMaker::GenerateMaze(int w, int h)
 	for (int y = 0; y < h; y++) {
 		for (int x = 0; x < w; x++) {
 			if (x == 0 || y == 0 || x == w - 1 || y == h - 1)
-				maze->SetBlock(x, y, BL_SOLID);
+				maze->SetBlock(x, y, BLOCKTYPE::BL_SOLID);
 			else
-				maze->SetBlock(x, y, BL_EMPTY);
+				maze->SetBlock(x, y, BLOCKTYPE::BL_EMPTY);
 
 		}
 	}

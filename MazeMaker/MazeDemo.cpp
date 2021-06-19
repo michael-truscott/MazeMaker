@@ -23,7 +23,7 @@ MazeDemo::MazeDemo() :
 	m_depthBuffer(nullptr),
 	m_mazeW(0),
 	m_mazeH(0),
-	m_state(ST_START),
+	m_state(DemoState::ST_START),
 	m_stateChangeAfter(0.0f),
 	m_rockToDelete(nullptr)
 {
@@ -63,14 +63,14 @@ void MazeDemo::Restart()
 	for (int i = 0; i < 3; i++) {
 		Vec2f viewPos = m_player->pos + m_player->GetViewVector();
 		MazeBlock block = m_maze->GetBlock((int)viewPos.x, (int)viewPos.y);
-		if (block.Type == BL_EMPTY)
+		if (block.Type == BLOCKTYPE::BL_EMPTY)
 			break;
 		m_player->angle += M_PI / 2;
 	}
 
 	m_mazeSolver = std::make_unique<RealTimeMazeSolver>(m_maze.get(), m_player.get());
 
-	m_state = ST_START;
+	m_state = DemoState::ST_START;
 	m_stateChangeAfter = WALL_GROW_TIME;
 	m_flipView = false;
 }
@@ -81,7 +81,7 @@ bool MazeDemo::CollidedWithMap(Vec2f v) {
 	if (x < 0 || x >= m_maze->Width() || y < 0 || y >= m_maze->Height())
 		return true;
 
-	return m_maze->GetBlock(x, y).Type == BL_SOLID;
+	return m_maze->GetBlock(x, y).Type == BLOCKTYPE::BL_SOLID;
 }
 
 Sprite* MazeDemo::HitRock(float dt)
@@ -111,17 +111,17 @@ bool MazeDemo::HitExit(float dt)
 void MazeDemo::Update(float dt)
 {
 	switch (m_state) {
-	case ST_START:
-	case ST_WALLGROW:
+	case DemoState::ST_START:
+	case DemoState::ST_WALLGROW:
 		// make walls grow then start running
 		m_stateChangeAfter -= dt;
 		m_wallScaleFactor = (WALL_GROW_TIME - m_stateChangeAfter) * DEFAULT_WALLSCALE;
 		if (m_stateChangeAfter <= 0.0f) {
 			m_wallScaleFactor = DEFAULT_WALLSCALE;
-			m_state = ST_RUNNING;
+			m_state = DemoState::ST_RUNNING;
 		}
 		break;
-	case ST_RUNNING:
+	case DemoState::ST_RUNNING:
 	{
 		if (m_rockToDelete) {
 			m_maze->RemoveObstacle(m_rockToDelete);
@@ -137,18 +137,18 @@ void MazeDemo::Update(float dt)
 		if (rock) {
 			m_rockToDelete = rock;
 			m_stateChangeAfter = WALL_GROW_TIME;
-			m_state = ST_WALLSHRINK;
+			m_state = DemoState::ST_WALLSHRINK;
 			break;
 		}
 		// are we within range of the exit? stop moving, schedule a restart
 		if (HitExit(dt)) {
 			m_stateChangeAfter = TIME_TIL_RESTART;
-			m_state = ST_FINISHED;
+			m_state = DemoState::ST_FINISHED;
 			break;
 		}
 		break;
 	}
-	case ST_WALLSHRINK:
+	case DemoState::ST_WALLSHRINK:
 		// TODO: test
 		m_stateChangeAfter -= dt;
 		m_wallScaleFactor = (m_stateChangeAfter) * DEFAULT_WALLSCALE;
@@ -156,10 +156,10 @@ void MazeDemo::Update(float dt)
 			m_flipView = !m_flipView;
 			m_wallScaleFactor = 0.01f;
 			m_stateChangeAfter = WALL_GROW_TIME;
-			m_state = ST_WALLGROW;
+			m_state = DemoState::ST_WALLGROW;
 		}
 		break;
-	case ST_FINISHED:
+	case DemoState::ST_FINISHED:
 		// restart once the time runs out
 		m_stateChangeAfter -= dt;
 		if (m_stateChangeAfter <= 0.0f)
@@ -269,7 +269,7 @@ void MazeDemo::TraceRay(const Vec2f pos, const float rayAngle, float &distToWall
 			xSide = false;
 		}
 
-		if (m_maze->GetBlock(mazeX, mazeY).Type == BL_SOLID) {
+		if (m_maze->GetBlock(mazeX, mazeY).Type == BLOCKTYPE::BL_SOLID) {
 			hitWall = true;
 			// get distance between ray hit and the camera plane
 			if (xSide)
@@ -282,16 +282,16 @@ void MazeDemo::TraceRay(const Vec2f pos, const float rayAngle, float &distToWall
 			Vec2f testPoint = m_player->pos + (eye * distToWall);
 			Vec2f offset = testPoint - blockMid;
 			switch (RayHitDir(offset)) {
-			case RH_TOP:
+			case RAYHIT_DIR::RH_TOP:
 				tx = testPoint.x - mazeX;
 				break;
-			case RH_BOTTOM:
+			case RAYHIT_DIR::RH_BOTTOM:
 				tx = 1.0f - (testPoint.x - mazeX);
 				break;
-			case RH_LEFT:
+			case RAYHIT_DIR::RH_LEFT:
 				tx = testPoint.y - mazeY;
 				break;
-			case RH_RIGHT:
+			case RAYHIT_DIR::RH_RIGHT:
 				tx = 1.0f - (testPoint.y - mazeY);
 				break;
 			}

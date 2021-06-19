@@ -36,7 +36,7 @@ Maze::~Maze()
 void Maze::Clear()
 {
 	for (int i = 0; i < m_w * m_h; i++)
-		m_blocks[i].Type = BL_SOLID;
+		m_blocks[i].Type = BLOCKTYPE::BL_SOLID;
 }
 
 MazeBlock Maze::GetBlock(int x, int y)

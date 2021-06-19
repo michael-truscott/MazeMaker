@@ -4,7 +4,7 @@
 #include <vector>
 #include "Vec2f.h"
 
-enum BLOCKTYPE {
+enum class BLOCKTYPE {
 	BL_EMPTY,
 	BL_SOLID,
 };

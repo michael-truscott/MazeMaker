@@ -24,6 +24,14 @@ struct InputState {
 	bool rotateR;
 };
 
+enum class DemoState {
+	ST_START,
+	ST_RUNNING,
+	ST_WALLSHRINK,
+	ST_WALLGROW,
+	ST_FINISHED,
+};
+
 class MazeDemo
 {
 public:
@@ -67,13 +75,6 @@ private:
 
 	int m_mazeW, m_mazeH;
 
-	enum DemoState {
-		ST_START,
-		ST_RUNNING,
-		ST_WALLSHRINK,
-		ST_WALLGROW,
-		ST_FINISHED,
-	};
 	DemoState m_state;
 	float m_stateChangeAfter;
 	Sprite *m_rockToDelete;

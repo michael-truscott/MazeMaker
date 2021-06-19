@@ -89,7 +89,7 @@ void RealTimeMazeSolver::Decide()
 	PLAYER_DIR pDir = GetPlayerDir();
 	// is there a path to the left?
 	auto leftOffset = GetOffset((PLAYER_DIR)((pDir + 1) % 4));
-	if (GetOffsetBlock(leftOffset.first, leftOffset.second).Type != BL_SOLID)
+	if (GetOffsetBlock(leftOffset.first, leftOffset.second).Type != BLOCKTYPE::BL_SOLID)
 	{
 		m_angleToRotate = M_PI / 2;
 		m_state = ST_ROTATEL;
@@ -97,7 +97,7 @@ void RealTimeMazeSolver::Decide()
 	}
 	// is there a path ahead?
 	auto forwardOffset = GetOffset(pDir);
-	if (GetOffsetBlock(forwardOffset.first, forwardOffset.second).Type != BL_SOLID)
+	if (GetOffsetBlock(forwardOffset.first, forwardOffset.second).Type != BLOCKTYPE::BL_SOLID)
 	{
 		m_distToMove = 1.0f;
 		m_state = ST_MOVE;
@@ -107,7 +107,7 @@ void RealTimeMazeSolver::Decide()
 	auto dir = (PLAYER_DIR)(pDir - 1);
 	if (dir == -1) dir = DIR_SOUTH;
 	auto rightOffset = GetOffset(dir);
-	if (GetOffsetBlock(rightOffset.first, rightOffset.second).Type != BL_SOLID)
+	if (GetOffsetBlock(rightOffset.first, rightOffset.second).Type != BLOCKTYPE::BL_SOLID)
 	{
 		m_angleToRotate = M_PI / 2;
 		m_state = ST_ROTATER;
@@ -158,7 +158,7 @@ MazeBlock RealTimeMazeSolver::GetOffsetBlock(int offX, int offY)
 
 	if (x < 0 || x >= m_maze->Width() ||
 		y < 0 || y >= m_maze->Height())
-		return MazeBlock{ BL_SOLID }; // prevent out of bounds
+		return MazeBlock{ BLOCKTYPE::BL_SOLID }; // prevent out of bounds
 
 	return m_maze->GetBlock(x, y);
 }

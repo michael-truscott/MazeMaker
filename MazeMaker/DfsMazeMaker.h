@@ -2,16 +2,16 @@
 
 #include "IMazeMaker.h"
 
+enum class WALL {
+	WALL_N,
+	WALL_E,
+	WALL_S,
+	WALL_W,
+};
+
 struct DfsNode {
 	int x, y;
 	bool visited;
-
-	enum WALL {
-		WALL_N,
-		WALL_E,
-		WALL_S,
-		WALL_W,
-	};
 };
 
 // DfsMazeMaker - Generates a maze based on a stack-based depth-first search algorithm

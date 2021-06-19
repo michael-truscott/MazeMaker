@@ -32,13 +32,13 @@ std::unique_ptr<Maze> DfsMazeMaker::GenerateMaze(int w, int h)
 		nodes[i] = { i % eW, i / eW, 0x00 };
 	}
 	
-	auto getNeighbour = [nodes, eW, eH](DfsNode* n, DfsNode::WALL dir) {
+	auto getNeighbour = [nodes, eW, eH](DfsNode* n, WALL dir) {
 		int nX, nY;
 		switch (dir) {
-		case DfsNode::WALL_N: nX = n->x; nY = n->y - 1; break;
-		case DfsNode::WALL_E: nX = n->x + 1; nY = n->y; break;
-		case DfsNode::WALL_S: nX = n->x; nY = n->y + 1; break;
-		case DfsNode::WALL_W: nX = n->x - 1; nY = n->y; break;
+		case WALL::WALL_N: nX = n->x; nY = n->y - 1; break;
+		case WALL::WALL_E: nX = n->x + 1; nY = n->y; break;
+		case WALL::WALL_S: nX = n->x; nY = n->y + 1; break;
+		case WALL::WALL_W: nX = n->x - 1; nY = n->y; break;
 		}
 		if (nX < 0 || nX >= eW || nY < 0 || nY >= eH)
 			return (DfsNode*)nullptr;
@@ -57,12 +57,12 @@ std::unique_ptr<Maze> DfsMazeMaker::GenerateMaze(int w, int h)
 		node->visited = true;
 		int realX, realY;
 		getRealXY(node, realX, realY);
-		maze->SetBlock(realX, realY, BL_EMPTY);
-		std::vector<DfsNode::WALL> neighbours;
-		if (getNeighbour(node, DfsNode::WALL_N)) neighbours.push_back(DfsNode::WALL_N);
-		if (getNeighbour(node, DfsNode::WALL_E)) neighbours.push_back(DfsNode::WALL_E);
-		if (getNeighbour(node, DfsNode::WALL_S)) neighbours.push_back(DfsNode::WALL_S);
-		if (getNeighbour(node, DfsNode::WALL_W)) neighbours.push_back(DfsNode::WALL_W);
+		maze->SetBlock(realX, realY, BLOCKTYPE::BL_EMPTY);
+		std::vector<WALL> neighbours;
+		if (getNeighbour(node, WALL::WALL_N)) neighbours.push_back(WALL::WALL_N);
+		if (getNeighbour(node, WALL::WALL_E)) neighbours.push_back(WALL::WALL_E);
+		if (getNeighbour(node, WALL::WALL_S)) neighbours.push_back(WALL::WALL_S);
+		if (getNeighbour(node, WALL::WALL_W)) neighbours.push_back(WALL::WALL_W);
 
 		// no unvisited neighbours?
 		if (neighbours.size() == 0) {
@@ -74,10 +74,10 @@ std::unique_ptr<Maze> DfsMazeMaker::GenerateMaze(int w, int h)
 		int index = std::rand() % neighbours.size();
 		// dig out the connecting wall
 		switch (neighbours[index]) {
-		case DfsNode::WALL_N: maze->SetBlock(realX, realY - 1, BL_EMPTY); break;
-		case DfsNode::WALL_E: maze->SetBlock(realX + 1, realY, BL_EMPTY); break;
-		case DfsNode::WALL_S: maze->SetBlock(realX, realY + 1, BL_EMPTY); break;
-		case DfsNode::WALL_W: maze->SetBlock(realX - 1, realY, BL_EMPTY); break;
+		case WALL::WALL_N: maze->SetBlock(realX, realY - 1, BLOCKTYPE::BL_EMPTY); break;
+		case WALL::WALL_E: maze->SetBlock(realX + 1, realY, BLOCKTYPE::BL_EMPTY); break;
+		case WALL::WALL_S: maze->SetBlock(realX, realY + 1, BLOCKTYPE::BL_EMPTY); break;
+		case WALL::WALL_W: maze->SetBlock(realX - 1, realY, BLOCKTYPE::BL_EMPTY); break;
 		}
 		auto newNode = getNeighbour(node, neighbours[index]);
 		stack.push(newNode);

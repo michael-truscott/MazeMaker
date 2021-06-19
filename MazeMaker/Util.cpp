@@ -16,8 +16,8 @@ void PrintMaze(Maze *maze) {
 		for (int x = 0; x < maze->Width(); x++) {
 			char c = '0';
 			switch (maze->GetBlock(x, y).Type) {
-			case BL_EMPTY: c = ' '; break;
-			case BL_SOLID: c = (char)219; break;
+			case BLOCKTYPE::BL_EMPTY: c = ' '; break;
+			case BLOCKTYPE::BL_SOLID: c = (char)219; break;
 			}
 			std::cout << c;
 		}
@@ -33,8 +33,8 @@ void RenderMazePreview(Maze *maze, Player &player, SDL_Surface *buffer, int bloc
 			MazeBlock block = maze->GetBlock(x, y);
 			Uint32 color;
 			switch (block.Type) {
-			case BL_EMPTY: color = SDL_MapRGB(buffer->format, 0x00, 0x00, 0x00); break;
-			case BL_SOLID: color = SDL_MapRGB(buffer->format, 0xCC, 0xCC, 0xCC); break;
+			case BLOCKTYPE::BL_EMPTY: color = SDL_MapRGB(buffer->format, 0x00, 0x00, 0x00); break;
+			case BLOCKTYPE::BL_SOLID: color = SDL_MapRGB(buffer->format, 0xCC, 0xCC, 0xCC); break;
 			default: color = SDL_MapRGB(buffer->format, 0x00, 0x00, 0x00); break;
 			}
 			SDL_Rect rect{ x*blockSize, y*blockSize, blockSize, blockSize };
@@ -113,10 +113,10 @@ RAYHIT_DIR RayHitDir(Vec2f offset)
 	float angle = SDL_atan2f(offset.x, -offset.y) - ((float)M_PI / 4);
 	if (angle < 0.0f) angle += (float)(2 * M_PI); // Put in the range [0,2*PI)
 
-	if (angle >= 0.0f && angle < M_PI / 2) return RH_RIGHT;
-	else if (angle >= M_PI / 2 && angle < M_PI) return RH_TOP;
-	else if (angle >= M_PI && angle < 3 * M_PI / 2) return RH_LEFT;
-	else return RH_BOTTOM;
+	if (angle >= 0.0f && angle < M_PI / 2) return RAYHIT_DIR::RH_RIGHT;
+	else if (angle >= M_PI / 2 && angle < M_PI) return RAYHIT_DIR::RH_TOP;
+	else if (angle >= M_PI && angle < 3 * M_PI / 2) return RAYHIT_DIR::RH_LEFT;
+	else return RAYHIT_DIR::RH_BOTTOM;
 }
 
 Uint32 SampleTexture(SDL_Surface * surface, float x, float y)

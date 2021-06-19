@@ -5,7 +5,7 @@
 #include "Maze.h"
 #include <SDL.h>
 
-enum RAYHIT_DIR {
+enum class RAYHIT_DIR {
 	RH_RIGHT,
 	RH_TOP,
 	RH_LEFT,
