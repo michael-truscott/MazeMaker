@@ -4,7 +4,6 @@
 //
 #define IDS_DESCRIPTION                 1
 #define IDB_BITMAP1                     102
-#define IDB_BRICKS                      102
 
 // Next default values for new objects
 // 
