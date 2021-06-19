@@ -3,6 +3,7 @@
 #include <unordered_set>
 #include <cstdlib>
 #include <ctime>
+#include <algorithm>
 #include "Vec2f.h"
 
 std::unique_ptr<Maze> DfsMazeMaker::GenerateMaze(int w, int h)
@@ -74,31 +75,49 @@ std::unique_ptr<Maze> DfsMazeMaker::GenerateMaze(int w, int h)
 		// dig out the connecting wall
 		switch (neighbours[index]) {
 		case DfsNode::WALL_N: maze->SetBlock(realX, realY - 1, BL_EMPTY); break;
-		case DfsNode::WALL_E:maze->SetBlock(realX + 1, realY, BL_EMPTY); break;
-		case DfsNode::WALL_S:maze->SetBlock(realX, realY + 1, BL_EMPTY); break;
-		case DfsNode::WALL_W:maze->SetBlock(realX - 1, realY, BL_EMPTY); break;
+		case DfsNode::WALL_E: maze->SetBlock(realX + 1, realY, BL_EMPTY); break;
+		case DfsNode::WALL_S: maze->SetBlock(realX, realY + 1, BL_EMPTY); break;
+		case DfsNode::WALL_W: maze->SetBlock(realX - 1, realY, BL_EMPTY); break;
 		}
 		auto newNode = getNeighbour(node, neighbours[index]);
 		stack.push(newNode);
 	}
+
+	auto obstacles = std::vector<std::pair<int, int>>{
+		{ 1, 1 },
+		{ 1, h - 2 },
+		{ w - 2, 1 },
+		{ w - 2, h - 2 },
+	};
+
+	for (auto &ob : obstacles)
+	{
+		maze->AddObstacle(ob.first, ob.second);
+	}
 	
 	int playerX, playerY;
-	getRealXY(&nodes[std::rand() % numNodes], playerX, playerY);
+	do {
+		getRealXY(&nodes[std::rand() % numNodes], playerX, playerY);
+		// keep trying random spots until we're not on top of an obstacle
+	} while (std::find_if(obstacles.begin(), obstacles.end(), [&playerX, &playerY] (auto& ob)
+		{
+			return ob.first == playerX && ob.second == playerY;
+		}) != obstacles.end());
 	maze->SetPlayerStart(playerX, playerY);
 
 	int endX, endY;
-	int minLength = 5; // don't let exit be too close to entrance
+	int minLength = 5;
 	do
 	{
 		getRealXY(&nodes[std::rand() % numNodes], endX, endY);
-	} while (Vec2f(endX - playerX, endY - playerY).Length() < 5);
+		// don't let exit be too close to entrance, or on top of an obstacle
+	} while (Vec2f(endX - playerX, endY - playerY).Length() < 5 ||
+		std::find_if(obstacles.begin(), obstacles.end(), [&endX, &endY](auto& ob)
+			{
+				return ob.first == endX && ob.second == endY;
+			}) != obstacles.end());
 	maze->SetEnd(endX, endY);
-
-	// testing: add obstacles
-	maze->AddObstacle(1, 1);
-	maze->AddObstacle(1, h - 2);
-	maze->AddObstacle(w-2, 1);
-	maze->AddObstacle(w-2, h-2);
+	
 
 	delete[] nodes;
 	return maze;

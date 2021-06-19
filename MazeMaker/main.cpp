@@ -48,7 +48,6 @@ void Update(float dt) {
 	mazeDemo->Update(dt);
 	mazeDemo->Render(drawBuffer);
 
-	//SDL_FillRect(drawBuffer, nullptr, SDL_MapRGB(drawBuffer->format, std::rand() % 256, std::rand() % 256, std::rand() % 256));
 	SDL_BlitScaled(drawBuffer, nullptr, screenSurface, nullptr);
 	SDL_UpdateWindowSurface(window);
 }
